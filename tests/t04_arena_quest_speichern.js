@@ -91,7 +91,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   const after = await ev(() => JSON.stringify({ m: World.mapId, x: World.p.x, y: World.p.y, p: G.party.map(q => q.species + q.level), b: G.badges, bag: G.bag, q: G.quests, money: G.money, d: Object.keys(G.defeated).sort() }));
   ok(before === after, 'Geladener Spielstand ist identisch: ' + after);
   // --- Kampfdetails: Wechsel, Item, Status, Flucht ---
-  await ev(() => { G.party[0].hp = 30; });
+  await ev(() => { G.party[0].hp = 30; const n = G.party[1]; n.level = 12; n.exp = Mon.expFor(Mon.sp(n), 12); n.hp = Mon.maxHp(n); });   // zweites Monster robust genug für zwei gegnerische Züge
   let fight = ev(() => World.run(async () => { const e = Mon.create('krabbli', 9); const r = await Battle.start({ kind: 'wild', enemy: [e] }); window.__res = r; await World.afterBattle(r, false); }));
   await mash(page, 'Battle.active && Battle.v.pHud && UI.layers.some(l => l.o && l.o.cols === 2)', 4000);
   // Trank benutzen: BEUTEL -> Trank -> Monster 1
@@ -100,14 +100,14 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   for (let i = 0; i < ti; i++) await press(page, 'down', 3);
   await press(page, 'a', 8); await snap(page, 'trank_ziel'); await press(page, 'a', 8);
   await LM_until(page, 'UI.layers.some(l => l.o && l.o.cols === 2)');
-  ok(await ev(() => G.party[0].hp >= 40 && Bag.count('trank') === 2), 'Trank im Kampf eingesetzt (+20 LP), Zug verbraucht: LP ' + await ev(() => G.party[0].hp));
+  ok(await ev(() => G.party[0].hp > 30 && Bag.count('trank') === 2), 'Trank im Kampf eingesetzt (+20 LP, danach greift der Gegner an), Zug verbraucht: LP ' + await ev(() => G.party[0].hp));
   // Wechsel: MONSTER -> zweites Monster -> WECHSEL
   await press(page, 'right', 3); await press(page, 'a', 8); await press(page, 'down', 3); await press(page, 'a', 8); await snap(page, 'wechsel'); await press(page, 'a', 8);
   await LM_until(page, 'UI.layers.some(l => l.o && l.o.cols === 2)');
   ok(await ev(() => Battle.pi === 1 && Battle.P().species === 'nagri'), 'Monsterwechsel im Kampf: aktiv ist ' + await ev(() => Battle.P().species));
   await snap(page, 'nach_wechsel');
   // Status: Gegner vergiften -> Schaden am Rundenende
-  await ev(() => { Battle.E().status = 'poison'; Battle.E().hp = Mon.maxHp(Battle.E()); Battle.v.eHp = Battle.E().hp; });
+  await ev(() => { Battle.E().status = 'poison'; Battle.E().hp = Mon.maxHp(Battle.E()); Battle.v.eHp = Battle.E().hp; Battle.P().hp = Mon.maxHp(Battle.P()); Battle.v.pHp = Battle.P().hp; });
   const ehp = await ev(() => Battle.E().hp);
   await press(page, 'left', 3); await press(page, 'up', 3); await press(page, 'a', 8); await press(page, 'a', 8);
   await LM_until(page, 'UI.layers.some(l => l.o && l.o.cols === 2) || !Battle.active');
