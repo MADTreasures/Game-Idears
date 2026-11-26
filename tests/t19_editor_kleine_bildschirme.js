@@ -47,7 +47,9 @@ const info = page => page.evaluate(() => { const s = Editor.pages.maps.state, m 
   const npc = await s.page.evaluate(() => { const n = Data.map('welpenhain').npcs[0]; return { x: n.x, y: n.y, id: n.id }; });
   r = await s.page.locator('.ed-mapwrap canvas').boundingBox(); z = (await info(s.page)).zoom;
   await s.page.touchscreen.tap(r.x + (npc.x + 0.5) * 16 * z, r.y + (npc.y + 0.5) * 16 * z); await s.page.waitForTimeout(150);
-  ok(await s.page.evaluate(id => getComputedStyle(document.querySelector('.ed-side')).display !== 'none' && Editor.pages.maps.state.ent && Editor.pages.maps.state.ent.id === id, npc.id), 'NPC antippen öffnet das Eigenschaftenfenster');
+  ok(await s.page.evaluate(id => getComputedStyle(document.querySelector('.ed-side')).display === 'none' && Editor.pages.maps.state.ent && Editor.pages.maps.state.ent.id === id, npc.id), 'NPC antippen wählt ihn aus, die Karte bleibt frei');
+  await s.page.locator('.ed-selbar button', { hasText: 'Bearbeiten' }).tap(); await s.page.waitForTimeout(150);
+  ok(await s.page.evaluate(() => getComputedStyle(document.querySelector('.ed-side')).display !== 'none'), '"Bearbeiten" öffnet das Eigenschaftenfenster');
   await s.page.screenshot({ path: path.join(OUT, 'edm_fold_npc.png') });
   await s.page.locator('.ed-side button', { hasText: 'Zuklappen' }).tap(); await s.page.waitForTimeout(100);
   ok(await s.page.evaluate(() => getComputedStyle(document.querySelector('.ed-side')).display === 'none'), 'Eigenschaften lassen sich wieder zuklappen');

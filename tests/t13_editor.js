@@ -42,9 +42,9 @@ function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name)
   await btn('Radierer', '.ed-tools'); await clickCell(11, 0);
   check('Radierer löscht Tile', await ev(() => Data.map('testkarte').layers.objects[11] === 0));
   // Auswahl, Kopieren, Einfügen, Vorlage
-  await layer('Boden'); await btn('Auswahl', '.ed-tools'); await dragCells(2, 2, 4, 2); await btn('Kopieren', '.ed-tools'); await btn('Einfügen', '.ed-tools'); await clickCell(2, 6);
+  await layer('Boden'); await btn('Auswählen', '.ed-tools'); await dragCells(2, 2, 4, 2); await btn('Kopieren', '.ed-tools'); await btn('Einfügen', '.ed-tools'); await clickCell(2, 6);
   check('Kopieren/Einfügen', await ev(g => { const m = Data.map('testkarte'); return [2, 3, 4].every(x => m.layers.ground[6 * 12 + x] === g); }, grassId));
-  await p.keyboard.press('Escape'); await btn('Auswahl', '.ed-tools'); await dragCells(0, 0, 2, 1); await btn('Als Vorlage', '.ed-tools'); await p.locator('.ed-modal input[type=text]').fill('Testvorlage'); await ok();
+  await p.keyboard.press('Escape'); await btn('Auswählen', '.ed-tools'); await dragCells(0, 0, 2, 1); await btn('Als Vorlage', '.ed-tools'); await p.locator('.ed-modal input[type=text]').fill('Testvorlage'); await ok();
   check('Vorlage gespeichert', await ev(() => { const pf = DB.prefabs.find(x => x.name === 'Testvorlage'); return !!pf && pf.w === 3 && pf.h === 2 && pf.objects.length === 6; }));
   const pfId = await ev(() => DB.prefabs.find(x => x.name === 'Testvorlage').id);
   await p.click('.ed-pal canvas[data-prefab="' + pfId + '"]'); await p.waitForTimeout(60); await clickCell(6, 7);
