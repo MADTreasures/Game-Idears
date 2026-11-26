@@ -101,7 +101,7 @@ function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name)
   // Karte duplizieren / löschen / Grösse per Dialog
   await btn('Duplizieren', '.ed-tools');
   check('Karte dupliziert', await ev(() => { const s = Editor.pages.maps.state, m = Data.map(s.mapId); return s.mapId !== 'spielwiese' && m.name === 'Spielwiese (Kopie)' && m.npcs.length === 2 && m.npcs !== Data.map('spielwiese').npcs; }));
-  await btn('Ändern…', '.ed-side'); await p.locator('.ed-modal input[type=number]').nth(0).fill('6'); await ok();
+  { const cw = await ev(() => Data.map(Editor.pages.maps.state.mapId).w); await btn('Ändern…', '.ed-side'); await p.locator('.ed-modal input[type=number]').nth(0).fill(String(6 - cw)); await ok(); }   // "Rechts anfügen" negativ = Karte schmaler
   check('Grösse per Dialog (Elemente bleiben in der Karte)', await ev(() => { const m = Data.map(Editor.pages.maps.state.mapId); return m.w === 6 && m.layers.ground.length === 54 && m.npcs.every(n => n.x < 6) && m.warps.every(w => w.x < 6); }));
   await btn('Löschen', '.ed-tools'); await ok();
   check('Karte gelöscht', await ev(() => !DB.maps.some(m => m.name === 'Spielwiese (Kopie)')));
