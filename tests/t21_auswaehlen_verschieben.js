@@ -18,38 +18,38 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   ok((await st()).tool === 'select' && await ev(() => /Auswählen/.test(document.querySelector('.ed-tools .ed-btn.on:not(.ed-propbtn)') ? [...document.querySelectorAll('.ed-tools .ed-btn.on')].map(b => b.textContent).join('|') : '')), '"Auswählen" ist das Standard-Werkzeug');
   // ---- Haus antippen: ganze Sache gewählt ----
   const before = await ev(() => { const m = Data.map('welpenhain'); return { obj: m.layers.objects.slice(), ground: m.layers.ground.slice(), door: m.warps.find(w => w.toMap === 'haus_spieler'), ret: Data.map('haus_spieler').warps.find(w => w.toMap === 'welpenhain') }; });
-  await tapCell(3, 3);
+  await tapCell(4, 9);
   let s = await st();
-  ok(s.sel && s.sel.x === 2 && s.sel.y === 2 && s.sel.w === 4 && s.sel.h === 4 && s.sel.layers.join() === 'objects' && s.layer === 'objects', 'Haus antippen wählt das ganze Haus samt angrenzendem Briefkasten (Ebene Objekte): ' + JSON.stringify(s.sel));
-  ok(await ev(() => { const r = Editor.pages.maps.state.sel; return !!r.mask && r.mask.filter(Boolean).length === 13; }), 'Gewählt sind genau die 13 zusammenhängenden Felder (12 Haus + 1 Briefkasten), nicht das ganze Rechteck');
-  ok(/Auswahl 4×4 \(Objekte\)/.test(await selBar()) && /Löschen/.test(await selBar()), 'Leiste zeigt die Auswahl mit Aktionen: ' + await selBar());
+  ok(s.sel && s.sel.x === 3 && s.sel.y === 8 && s.sel.w === 4 && s.sel.h === 3 && s.sel.layers.join() === 'objects' && s.layer === 'objects', 'Haus antippen wählt das ganze Haus (Ebene Objekte): ' + JSON.stringify(s.sel));
+  ok(await ev(() => { const r = Editor.pages.maps.state.sel; return !r.mask || r.mask.filter(Boolean).length === 12; }), 'Gewählt sind genau die 12 zusammenhängenden Felder des Hauses');
+  ok(/Auswahl 4×3 \(Objekte\)/.test(await selBar()) && /Löschen/.test(await selBar()), 'Leiste zeigt die Auswahl mit Aktionen: ' + await selBar());
   ok(await ev(() => { const b = document.querySelector('.ed-selbar').getBoundingClientRect(); return b.left >= 0 && b.left < 60; }), 'Auswahl-Leiste steht vorn in der Werkzeugzeile (ohne Wischen sichtbar)');
   await page.screenshot({ path: path.join(OUT, 'eds_haus_gewaehlt.png') });
-  // ---- Haus verschieben (ziehen): 3 nach rechts, 4 nach unten ----
-  await dragCells(3, 3, 6, 7);
+  // ---- Haus verschieben (ziehen): 4 nach unten ----
+  await dragCells(4, 9, 4, 13);
   const moved = await ev(b => {
     const m = Data.map('welpenhain'); let tilesOk = true, oldEmpty = true, groundSame = true;
-    for (let j = 0; j < 3; j++) for (let i = 0; i < 4; i++) { if (m.layers.objects[(6 + j) * m.w + 5 + i] !== b.obj[(2 + j) * m.w + 2 + i]) tilesOk = false; if (m.layers.objects[(2 + j) * m.w + 2 + i] !== 0) oldEmpty = false; }
+    for (let j = 0; j < 3; j++) for (let i = 0; i < 4; i++) { if (m.layers.objects[(12 + j) * m.w + 3 + i] !== b.obj[(8 + j) * m.w + 3 + i]) tilesOk = false; if (m.layers.objects[(8 + j) * m.w + 3 + i] !== 0) oldEmpty = false; }
     for (let k = 0; k < m.layers.ground.length; k++) if (m.layers.ground[k] !== b.ground[k]) groundSame = false;
     const door = m.warps.find(w => w.toMap === 'haus_spieler'), ret = Data.map('haus_spieler').warps.find(w => w.toMap === 'welpenhain'), s = Editor.pages.maps.state.sel;
     return { tilesOk, oldEmpty, groundSame, door: [door.x, door.y], ret: [ret.toX, ret.toY], sel: s && [s.x, s.y] };
   }, before);
   ok(moved.tilesOk && moved.oldEmpty && moved.groundSame, 'Haus durch Ziehen verschoben (alte Stelle leer, Boden unverändert)');
-  ok(moved.door[0] === before.door.x + 3 && moved.door[1] === before.door.y + 4, 'Tür-Übergang ist mitgewandert: ' + moved.door);
-  ok(moved.ret[0] === before.ret.toX + 3 && moved.ret[1] === before.ret.toY + 4, 'Rückweg aus dem Haus führt vor die neue Tür: ' + moved.ret);
-  ok(moved.sel && moved.sel[0] === 5 && moved.sel[1] === 6, 'Auswahl bleibt auf dem verschobenen Haus');
+  ok(moved.door[0] === before.door.x && moved.door[1] === before.door.y + 4, 'Tür-Übergang ist mitgewandert: ' + moved.door);
+  ok(moved.ret[0] === before.ret.toX && moved.ret[1] === before.ret.toY + 4, 'Rückweg aus dem Haus führt vor die neue Tür: ' + moved.ret);
+  ok(moved.sel && moved.sel[0] === 3 && moved.sel[1] === 12, 'Auswahl bleibt auf dem verschobenen Haus');
   await page.screenshot({ path: path.join(OUT, 'eds_haus_verschoben.png') });
   // im Spiel prüfen: durch die neue Tür hinein und wieder heraus
-  const play = await ev(async () => { Editor.test({ map: 'welpenhain', x: 6, y: 9 }); Engine.manual = true; await LMDebug.ff(5); await LMDebug.walk('U'); await LMDebug.until(() => World.mapId === 'haus_spieler' && !World.lock && Gfx.fade === 0, 600); const a = World.mapId; await LMDebug.walk('D'); await LMDebug.until(() => World.mapId === 'welpenhain' && !World.lock && Gfx.fade === 0, 600); const r = { a, b: World.mapId + ':' + World.p.x + ',' + World.p.y }; Engine.manual = false; return r; });
-  ok(play.a === 'haus_spieler' && play.b === 'welpenhain:6,9', 'Im Spiel: neue Tür führt ins Haus, der Ausgang wieder vor die neue Tür: ' + JSON.stringify(play));
+  const play = await ev(async () => { Editor.test({ map: 'welpenhain', x: 4, y: 15 }); Engine.manual = true; await LMDebug.ff(5); await LMDebug.walk('U'); await LMDebug.until(() => World.mapId === 'haus_spieler' && !World.lock && Gfx.fade === 0, 600); const a = World.mapId; await LMDebug.walk('D'); await LMDebug.until(() => World.mapId === 'welpenhain' && !World.lock && Gfx.fade === 0, 600); const r = { a, b: World.mapId + ':' + World.p.x + ',' + World.p.y }; Engine.manual = false; return r; });
+  ok(play.a === 'haus_spieler' && play.b === 'welpenhain:4,15', 'Im Spiel: neue Tür führt ins Haus, der Ausgang wieder vor die neue Tür: ' + JSON.stringify(play));
   await ev(() => Engine.toggleEditor()); await page.waitForTimeout(300);
   // ---- Teich antippen und löschen (Boden wird mit Rasen gefüllt) ----
   await page.locator('.ed-selbar button', { hasText: '✕' }).tap(); await page.waitForTimeout(100);
   ok(await selBar() === '', 'Auswahl aufgehoben (✕)');
-  await tapCell(3, 11); s = await st();
-  ok(s.sel && s.sel.x === 2 && s.sel.y === 10 && s.sel.w === 4 && s.sel.h === 3 && s.sel.layers.join() === 'ground', 'Teich antippen wählt den ganzen Teich: ' + JSON.stringify(s.sel));
+  await tapCell(15, 14); s = await st();
+  ok(s.sel && s.sel.x === 13 && s.sel.y === 13 && s.sel.w === 6 && s.sel.h === 3 && s.sel.layers.join() === 'ground', 'Teich antippen wählt den ganzen Teich: ' + JSON.stringify(s.sel));
   await page.locator('.ed-selbar button', { hasText: 'Löschen' }).tap(); await page.waitForTimeout(200);
-  ok(await ev(() => { const m = Data.map('welpenhain'), g = DB.tiles.find(t => t.sprite === 't_grass').id; for (let j = 10; j < 13; j++) for (let i = 2; i < 6; i++) if (m.layers.ground[j * m.w + i] !== g) return false; return !Editor.pages.maps.state.sel; }), 'Löschen ersetzt den Teich durch Rasen (kein schwarzes Loch)');
+  ok(await ev(() => { const m = Data.map('welpenhain'), g = DB.tiles.find(t => t.sprite === 't_grass').id; for (let j = 13; j < 16; j++) for (let i = 13; i < 19; i++) if (m.layers.ground[j * m.w + i] !== g) return false; return !Editor.pages.maps.state.sel; }), 'Löschen ersetzt den Teich durch Rasen (kein schwarzes Loch)');
   // ---- einzelnes Feld im grossen Rasen: nur dieses Feld ----
   await tapCell(13, 8); s = await st();
   ok(s.sel && s.sel.w === 1 && s.sel.h === 1, 'Grosse Flächen (Rasen): Antippen wählt nur das eine Feld');
@@ -57,10 +57,10 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   // ---- NPC mit dem Auswählen-Werkzeug (ohne Ebenenwechsel) ----
   const npc = await ev(() => { const n = Data.map('welpenhain').npcs.find(n => n.id === 'angler'); return { x: n.x, y: n.y, count: Data.map('welpenhain').npcs.length }; });
   await tapCell(npc.x, npc.y); s = await st();
-  ok(s.ent && s.ent.id === 'angler' && /NPC "Mann"/.test(await selBar()), 'NPC antippen wählt ihn aus: ' + await selBar());
+  ok(s.ent && s.ent.id === 'angler' && /NPC "Angler"/.test(await selBar()), 'NPC antippen wählt ihn aus: ' + await selBar());
   ok(await ev(() => getComputedStyle(document.querySelector('.ed-side')).display === 'none'), 'Die Karte bleibt dabei frei (Eigenschaften öffnen sich erst mit "Bearbeiten")');
-  await dragCells(npc.x, npc.y, npc.x + 4, npc.y + 2);
-  ok(await ev(n => { const a = Data.map('welpenhain').npcs.find(n => n.id === 'angler'); return a.x === n.x + 4 && a.y === n.y + 2; }, npc), 'NPC durch Ziehen verschoben');
+  await dragCells(npc.x, npc.y, npc.x - 4, npc.y + 1);
+  ok(await ev(n => { const a = Data.map('welpenhain').npcs.find(n => n.id === 'angler'); return a.x === n.x - 4 && a.y === n.y + 1; }, npc), 'NPC durch Ziehen verschoben');
   await page.locator('.ed-selbar button', { hasText: 'Bearbeiten' }).tap(); await page.waitForTimeout(150);
   ok(await ev(() => getComputedStyle(document.querySelector('.ed-side')).display !== 'none' && /NPC "angler"/.test(document.querySelector('.ed-side').textContent)), '"Bearbeiten" öffnet die Eigenschaften des NPCs');
   await page.locator('.ed-side button', { hasText: 'Zuklappen' }).tap(); await page.waitForTimeout(100);

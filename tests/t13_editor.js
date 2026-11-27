@@ -110,7 +110,7 @@ function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name)
   console.log('4) Datenbank: Monster, Attacke, Trainer, Arena, Gegenstand');
   const mk = async (page, id, name) => { await nav(page); await btn('Neu', '.ed-listhead'); await p.locator('.ed-modal input[type=text]').nth(0).fill(id); await p.locator('.ed-modal input[type=text]').nth(1).fill(name); await ok(); };
   await mk('monsters', 'testmon', 'Testmon');
-  check('Monster angelegt', await ev(() => { const m = Data.idx.monsters.testmon; return !!m && m.name === 'Testmon' && m.no === 15 && Editor.sel.monsters === 'testmon'; }));
+  check('Monster angelegt', await ev(() => { const m = Data.idx.monsters.testmon; return !!m && m.name === 'Testmon' && m.no === 38 && Editor.sel.monsters === 'testmon'; }));
   await p.locator('.ed-form .ed-f', { hasText: 'Basiswerte' }).first().locator('input').nth(0).fill('77'); await p.keyboard.press('Tab');
   await btn('+ Attacke', '.ed-form'); await btn('+ Entwicklung', '.ed-form');
   await p.locator('.ed-form .ed-f', { hasText: 'Lexikon-Beschreibung' }).locator('textarea').fill('Ein Testmonster.'); await p.keyboard.press('Tab');
@@ -118,9 +118,9 @@ function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name)
   await p.locator('.ed-form .ed-row select', { has: p.locator('option', { hasText: 'durch Gegenstand' }) }).selectOption('item'); await p.waitForTimeout(60);
   check('Entwicklungsbedingung Gegenstand (Feld erscheint)', await ev(() => Data.idx.monsters.testmon.evolutions[0].kind === 'item') && await p.locator('.ed-form .ed-row .ed-f', { hasText: 'Gegenstand' }).count() > 0);
   await btn('Dupl.', '.ed-listhead');
-  check('Monster dupliziert', await ev(() => DB.monsters.length === 16 && DB.monsters[15].no === 16 && DB.monsters[15].base.hp === 77));
+  check('Monster dupliziert', await ev(() => DB.monsters.length === 39 && DB.monsters[38].no === 39 && DB.monsters[38].base.hp === 77));
   await btn('Löschen', '.ed-listhead'); await ok();
-  check('Monster gelöscht', await ev(() => DB.monsters.length === 15));
+  check('Monster gelöscht', await ev(() => DB.monsters.length === 38));
   await mk('moves', 'testhieb', 'Testhieb'); await btn('+ Effekt', '.ed-form');
   check('Attacke mit Effekt', await ev(() => { const m = Data.idx.moves.testhieb; return !!m && m.effects.length === 1 && m.effects[0].k === 'status' && m.effects[0].status === 'poison'; }));
   await p.locator('.ed-form .ed-row .ed-f', { hasText: 'Effekt' }).first().locator('select').selectOption('stat'); await p.waitForTimeout(60);

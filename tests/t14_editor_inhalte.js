@@ -15,7 +15,9 @@ function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name)
   const mapCell = async (x, y) => { const z = await ev(() => Editor.pages.maps.state.zoom), r = await p.locator('.ed-mapwrap canvas').boundingBox(); return { x: r.x + (x + 0.5) * 16 * z, y: r.y + (y + 0.5) * 16 * z }; };
   const clickCell = async (x, y) => { const c = await mapCell(x, y); await p.mouse.move(c.x, c.y); await p.mouse.down(); await p.mouse.up(); await p.waitForTimeout(60); };
   const layer = async name => { await p.locator('.ed-tools button', { hasText: new RegExp('^' + name + '$') }).first().click(); await p.waitForTimeout(60); };
-  const field = (scope, label) => p.locator(scope + ' .ed-f', { hasText: label }).first();
+  // Feld über seine Beschriftung finden (nur das eigene Label zählt – Auswahllisten enthalten sonst zufällig passende Wörter).
+  const esc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const field = (scope, label) => p.locator(scope + ' .ed-f').filter({ has: p.locator('xpath=./label').filter({ hasText: new RegExp('^' + esc(label)) }) }).first();
   const mk = async (page, id, name) => { await nav(page); await btn('Neu', '.ed-listhead'); const t = p.locator('.ed-modal input[type=text]'); if (await t.count() > 1) { await t.nth(0).fill(id); await t.nth(1).fill(name); } else await t.nth(0).fill(name); await ok(); };
   await p.keyboard.press('F2'); await p.waitForTimeout(200);
 

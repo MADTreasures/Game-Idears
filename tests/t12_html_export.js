@@ -30,19 +30,19 @@ async function exportViaButton(page, target) {
     const g = DB.tiles.find(t => t.sprite === 't_grass').id, tr = DB.tiles.find(t => t.sprite === 't_tree').id;
     const m = Data.fixMap({ id: 'neustadt', name: 'NEUSTADT', w: 12, h: 10, kind: 'outdoor', song: 'stadt', border: tr, layers: { ground: new Array(120).fill(g), objects: new Array(120).fill(0).map((v, i) => (i % 12 === 0 || i % 12 === 11 || i < 12 || i >= 108) ? tr : 0) } });
     m.npcs.push({ id: 'bote', name: 'Bote', x: 5, y: 4, charset: 'man', dir: 'down', move: 'none', visibleIf: [], pages: [{ if: [], do: [{ k: 'say', text: 'Willkommen in Neustadt!' }] }] });
-    m.warps.push({ id: 'zurueck', x: 1, y: 5, kind: 'step', toMap: 'route2', toX: 25, toY: 6, toDir: 'left', cond: [] });
+    m.warps.push({ id: 'zurueck', x: 1, y: 5, kind: 'step', toMap: 'route2', toX: 17, toY: 2, toDir: 'left', cond: [] });
     m.encounters.push({ zone: 1, name: 'Gras', rate: 20, slots: [{ species: 'neumon_1', min: 5, max: 7, weight: 1 }] });
     DB.maps.push(m);
-    Data.map('route2').warps.push({ id: 'nach_neustadt', x: 26, y: 5, kind: 'step', toMap: 'neustadt', toX: 2, toY: 5, toDir: 'right', cond: [] });
+    Data.map('route2').warps.push({ id: 'nach_neustadt', x: 18, y: 2, kind: 'step', toMap: 'neustadt', toX: 2, toY: 5, toDir: 'right', cond: [] });
     // fünf neue Monster (Kopien mit eigenen Namen/Sprites)
-    for (let i = 1; i <= 5; i++) { const c = JSON.parse(JSON.stringify(DB.monsters[i])); c.id = 'neumon_' + i; c.no = 14 + i; c.name = 'Neumon' + i; c.evolutions = []; DB.sprites['neu_front_' + i] = JSON.parse(JSON.stringify(DB.sprites[c.sprites.front])); c.sprites = Object.assign({}, c.sprites, { front: 'neu_front_' + i }); DB.monsters.push(c); }
+    for (let i = 1; i <= 5; i++) { const c = JSON.parse(JSON.stringify(DB.monsters[i])); c.id = 'neumon_' + i; c.no = 37 + i; c.name = 'Neumon' + i; c.evolutions = []; DB.sprites['neu_front_' + i] = JSON.parse(JSON.stringify(DB.sprites[c.sprites.front])); c.sprites = Object.assign({}, c.sprites, { front: 'neu_front_' + i }); DB.monsters.push(c); }
     // neue Arena mit Leiter
     DB.trainers.push({ id: 'leiter2', cls: 'Leiter', name: 'Nero', charset: 'man', sprite: 'tr_boy', team: [{ species: 'neumon_1', level: 20 }, { species: 'neumon_5', level: 22 }], reward: 2000, intro: 'Ich bin Nero!', defeat: 'Unglaublich!', after: 'Gut gekämpft.', sight: 0, cond: [], ai: 'smart' });
     DB.sprites.badge_neu = JSON.parse(JSON.stringify(DB.sprites.badge_buddel));
-    DB.gyms.push({ id: 'gym2', name: 'Arena Neustadt', map: 'neustadt', leader: 'leiter2', trainers: [], badge: { name: 'Neumedaille', sprite: 'badge_neu' }, entryCond: [{ k: 'hasBadge', gym: 'gym1' }], entryDenied: 'Nur mit Buddelmedaille!', needTrainers: false, rewards: [{ k: 'giveMoney', n: 500 }], winText: 'Geschafft!' });
+    DB.gyms.push({ id: 'gym_neu', name: 'Arena Neustadt', map: 'neustadt', leader: 'leiter2', trainers: [], badge: { name: 'Neumedaille', sprite: 'badge_neu' }, entryCond: [{ k: 'hasBadge', gym: 'gym1' }], entryDenied: 'Nur mit Federmedaille!', needTrainers: false, rewards: [{ k: 'giveMoney', n: 500 }], winText: 'Geschafft!' });
     m.npcs.push({ id: 'nero', name: 'Nero', x: 8, y: 4, charset: 'man', dir: 'down', move: 'none', trainer: 'leiter2', visibleIf: [], pages: [] });
     DB.meta.title = 'Leinenmeister Test';
-    Data.reindex(); if (Editor.changed) Editor.changed(); if (Editor.refresh) Editor.refresh();
+    Data.reindex();
   });
   const issues = await s.page.evaluate(() => Editor.validate().filter(i => i.level === 'error').map(i => i.msg));
   ok(issues.length === 0, 'Validierung des erweiterten Projekts ohne Fehler' + (issues.length ? ': ' + issues.join(' | ') : ''));
@@ -54,14 +54,14 @@ async function exportViaButton(page, target) {
   const g1 = fs.readFileSync(e1, 'utf8');
   ok(codeOf(g1) === codeOf(orig), 'Programmcode der exportierten Datei ist byte-identisch zum Original (' + codeOf(g1).length + ' Zeichen)');
   const d1 = dataOf(g1);
-  ok(d1.maps.some(m => m.id === 'neustadt') && d1.monsters.length === 19 && d1.gyms.length === 2 && d1.sprites.neu_front_3 && d1.meta.title === 'Leinenmeister Test', 'Exportierte Daten enthalten neue Stadt, 5 Monster, Arena, Sprites, Titel');
+  ok(d1.maps.some(m => m.id === 'neustadt') && d1.monsters.length === 42 && d1.gyms.length === 6 && d1.sprites.neu_front_3 && d1.meta.title === 'Leinenmeister Test', 'Exportierte Daten enthalten neue Stadt, 5 Monster, Arena, Sprites, Titel');
   ok(/<title>Leinenmeister Test<\/title>/.test(g1), 'Titel der exportierten Datei gesetzt');
   // --- Exportierte Datei in frischem Profil öffnen und SPIELEN ---
   s = await fresh(e1);
-  ok(await s.page.evaluate(() => Project.source === 'embedded' && !!Data.map('neustadt') && DB.monsters.length === 19), 'Exportierte Datei lädt eigenständig (keine Browserdaten nötig), Änderungen vorhanden');
+  ok(await s.page.evaluate(() => Project.source === 'embedded' && !!Data.map('neustadt') && DB.monsters.length === 42), 'Exportierte Datei lädt eigenständig (keine Browserdaten nötig), Änderungen vorhanden');
   const play = await s.page.evaluate(async () => {
-    Engine.manual = true; Opt.text = 2; Engine.reset(); G = Game.fresh(); G.name = 'TEST'; Mon.give(Mon.create('quappel', 60)); G.badges.push('gym1'); G.flags.has_dex = true; G.flags.rival2_done = true; Engine.startGame(G); World.enter('route2', 25, 6, 'right'); World.encCooldown = 999;
-    await LMDebug.ff(5); await LMDebug.walk('U'); await LMDebug.walk('R');                       // auf den neuen Übergang (26,5)
+    Engine.manual = true; Opt.text = 2; Engine.reset(); G = Game.fresh(); G.name = 'TEST'; Mon.give(Mon.create('quappel', 60)); G.badges.push('gym1'); G.flags.has_dex = true; G.flags.rival2_done = true; Engine.startGame(G); World.enter('route2', 17, 3, 'right'); World.encCooldown = 999;
+    await LMDebug.ff(5); await LMDebug.walk('U'); await LMDebug.walk('R');                       // auf den neuen Übergang (18,2)
     await LMDebug.until(() => World.mapId === 'neustadt' && !World.lock && Gfx.fade === 0, 600);
     const r = { map: World.mapId, x: World.p.x, y: World.p.y };
     World.p.x = 5; World.p.y = 5; World.p.dir = 'up'; await LMDebug.press('a', 30); r.npc = UI.tb.lines.join(' ');
@@ -75,18 +75,18 @@ async function exportViaButton(page, target) {
   ok(play.map === 'neustadt' && play.x === 2 && play.y === 5, 'Im Export: neuer Übergang Route 2 -> Neustadt funktioniert: ' + JSON.stringify(play));
   ok(/Willkommen in Neustadt/.test(play.npc), 'Im Export: neuer NPC spricht: ' + play.npc);
   ok(play.battle === 'leiter2' && play.foe === 'neumon_1', 'Im Export: neue Arena – Kampf gegen neuen Leiter mit neuem Monster');
-  ok(play.badges.includes('gym2') && play.money === 3000 + 2000 + 500, 'Im Export: neue Medaille + Belohnungen erhalten ($' + play.money + ')');
+  ok(play.badges.includes('gym_neu') && play.money === 3000 + 2000 + 500, 'Im Export: neue Medaille + Belohnungen erhalten ($' + play.money + ')');
   // --- Generation 2: Editor in der exportierten Datei benutzen und erneut exportieren ---
   await s.page.evaluate(() => { Engine.manual = false; });
   await s.page.keyboard.press('F2'); await s.page.waitForTimeout(300);
   ok(await s.page.evaluate(() => Engine.editorOpen && !!document.getElementById('ed-root')), 'Editor öffnet sich in der exportierten Datei');
-  await s.page.evaluate(() => { Data.map('neustadt').name = 'NEUSTADT II'; DB.items.push({ id: 'neuitem', name: 'Neuitem', cat: 'misc', price: 5, desc: 'Test.' }); Data.reindex(); if (Editor.changed) Editor.changed(); });
+  await s.page.evaluate(() => { Data.map('neustadt').name = 'NEUSTADT II'; DB.items.push({ id: 'neuitem', name: 'Neuitem', cat: 'misc', price: 5, desc: 'Test.' }); Data.reindex(); });
   const e2 = path.join(OUT, 'export_gen2.html'); await exportViaButton(s.page, e2);
   ok(s.errors.length === 0, 'keine JS-Fehler in Generation 1' + (s.errors.length ? ': ' + s.errors.join(' | ') : ''));
   await s.browser.close();
   const g2 = fs.readFileSync(e2, 'utf8'), d2 = dataOf(g2);
   ok(codeOf(g2) === codeOf(orig), 'Erneuter Export: Programmcode weiterhin identisch');
-  ok(d2.maps.find(m => m.id === 'neustadt').name === 'NEUSTADT II' && d2.items.some(i => i.id === 'neuitem') && d2.monsters.length === 19, 'Erneuter Export enthält alte und neue Änderungen');
+  ok(d2.maps.find(m => m.id === 'neustadt').name === 'NEUSTADT II' && d2.items.some(i => i.id === 'neuitem') && d2.monsters.length === 42, 'Erneuter Export enthält alte und neue Änderungen');
   ok(d2.meta.revision > d1.meta.revision && d2.meta.savedAt >= d1.meta.savedAt, 'Revisionszähler steigt (' + d1.meta.revision + ' -> ' + d2.meta.revision + ')');
   s = await fresh(e2);
   ok(await s.page.evaluate(() => Data.map('neustadt').name === 'NEUSTADT II' && !!Data.idx.items.neuitem), 'Zweite Generation lädt eigenständig');

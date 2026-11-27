@@ -16,11 +16,11 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   ok(await page.evaluate(() => { const b = [...document.querySelectorAll('.ed-tools button')].find(x => /^Grösse/.test(x.textContent)), r = b.getBoundingClientRect(); return r.left >= 0 && r.right <= window.innerWidth; }), 'Handy: Schaltfläche "Grösse…" ist neben der Kartenauswahl direkt sichtbar');
   ok(await page.evaluate(() => document.querySelectorAll('.ed-tools.ed-more').length >= 2 && document.querySelector('.ed-nav').classList.contains('ed-more')), 'Wischbare Leisten zeigen rechts einen Pfeil');
   await page.screenshot({ path: path.join(OUT, 'edr_phone_before.png') });
-  const before = await page.evaluate(() => { const m = Data.map('welpenhain'); return { w: m.w, h: m.h, npc: m.npcs.map(n => [n.x, n.y]), warp: m.warps.map(w => [w.x, w.y]), ground: m.layers.ground.slice(), obj: m.layers.objects.slice(), inWarp: Data.map('haus_spieler').warps.find(w => w.toMap === 'welpenhain'), north: m.connections.north.offset, r1south: Data.map('route1').connections.south.offset }; });
+  const before = await page.evaluate(() => { const m = Data.map('welpenhain'); return { w: m.w, h: m.h, npc: m.npcs.map(n => [n.x, n.y]), warp: m.warps.map(w => [w.x, w.y]), ground: m.layers.ground.slice(), obj: m.layers.objects.slice(), inWarp: Data.map('haus_spieler').warps.find(w => w.toMap === 'welpenhain'), east: m.connections.east.offset, r1west: Data.map('route1').connections.west.offset }; });
   // Dialog öffnen
   await page.locator('.ed-tools button', { hasText: /^Grösse/ }).tap(); await page.waitForTimeout(200);
   await page.screenshot({ path: path.join(OUT, 'edr_phone_dialog.png') });
-  ok(await page.evaluate(() => /Aktuelle Grösse: 20 × 18/.test(document.querySelector('.ed-modal').textContent)), 'Dialog nennt die aktuelle Grösse (20 × 18)');
+  ok(await page.evaluate(() => /Aktuelle Grösse: 24 × 18/.test(document.querySelector('.ed-modal').textContent)), 'Dialog nennt die aktuelle Grösse (24 × 18)');
   const nums = page.locator('.ed-modal input[type=number]');
   await nums.nth(0).fill('5'); await nums.nth(1).fill('4'); await nums.nth(2).fill('3'); await nums.nth(3).fill('2');      // rechts 5, unten 4, links 3, oben 2
   await page.locator('.ed-modal .ed-ok').tap(); await page.waitForTimeout(300);
@@ -30,36 +30,36 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
       if (inOld) { if (m.layers.ground[y * m.w + x] !== b.ground[oy * b.w + ox] || m.layers.objects[y * m.w + x] !== b.obj[oy * b.w + ox]) oldOk = false; }
       else if (m.layers.ground[y * m.w + x] !== g || m.layers.objects[y * m.w + x] !== 0) newOk = false; }
     const s = Editor.pages.maps.state, c = document.querySelector('.ed-mapwrap canvas').getBoundingClientRect(), w = document.querySelector('.ed-mapwrap').getBoundingClientRect();
-    return { w: m.w, h: m.h, oldOk, newOk, npc: m.npcs.map(n => [n.x, n.y]), warp: m.warps.map(w => [w.x, w.y]), inWarp: Data.map('haus_spieler').warps.find(w => w.toMap === 'welpenhain'), north: m.connections.north.offset, r1south: Data.map('route1').connections.south.offset, fit: s.fit, inside: c.right <= w.right + 1 && c.bottom <= w.bottom + 1 && c.left >= w.left - 1 };
+    return { w: m.w, h: m.h, oldOk, newOk, npc: m.npcs.map(n => [n.x, n.y]), warp: m.warps.map(w => [w.x, w.y]), inWarp: Data.map('haus_spieler').warps.find(w => w.toMap === 'welpenhain'), east: m.connections.east.offset, r1west: Data.map('route1').connections.west.offset, fit: s.fit, inside: c.right <= w.right + 1 && c.bottom <= w.bottom + 1 && c.left >= w.left - 1 };
   }, before);
-  ok(r.w === 28 && r.h === 24, 'Karte ist jetzt 28 × 24 Felder (vorher 20 × 18): ' + r.w + ' × ' + r.h);
+  ok(r.w === 32 && r.h === 24, 'Karte ist jetzt 32 × 24 Felder (vorher 24 × 18): ' + r.w + ' × ' + r.h);
   ok(r.oldOk, 'Vorhandener Karteninhalt ist unverändert (um 3 nach rechts / 2 nach unten gerückt)');
   ok(r.newOk, 'Neue Felder sind mit dem häufigsten Boden (Rasen) gefüllt');
   ok(r.npc.every((p, i) => p[0] === before.npc[i][0] + 3 && p[1] === before.npc[i][1] + 2) && r.warp.every((p, i) => p[0] === before.warp[i][0] + 3 && p[1] === before.warp[i][1] + 2), 'NPCs und Übergänge sind mitgewandert');
   ok(r.inWarp.toX === before.inWarp.toX + 3 && r.inWarp.toY === before.inWarp.toY + 2, 'Übergänge anderer Karten zeigen weiter auf dasselbe Feld (Haus -> Dorf)');
-  ok(r.north === before.north + 3 && r.r1south === before.r1south - 3, 'Versatz der nahtlosen Kartenränder angepasst (Dorf ' + r.north + ', Route 1 ' + r.r1south + ')');
+  ok(r.east === before.east + 2 && r.r1west === before.r1west - 2, 'Versatz der nahtlosen Kartenränder angepasst (Dorf ' + r.east + ', Route 1 ' + r.r1west + ')');
   ok(r.fit && r.inside, 'Die vergrösserte Karte wird wieder ganz angezeigt');
   await page.screenshot({ path: path.join(OUT, 'edr_phone_after.png') });
   // Im Spiel: Haus verlassen landet vor der Tür, Übergang zur Route passt weiterhin
   const play = await page.evaluate(async () => {
-    Editor.test({ map: 'welpenhain', x: 12, y: 1 }); Engine.manual = true; await LMDebug.ff(5);
+    Editor.test({ map: 'welpenhain', x: 30, y: 10 }); Engine.manual = true; await LMDebug.ff(5);   // Ausgangsreihe 8 liegt jetzt in Reihe 10, der Ostrand bei x = 31
     const d = Data.map('welpenhain'), door = d.warps.find(w => w.toMap === 'haus_spieler'), out = {};
     out.doorTile = (Data.tile(d.layers.objects[door.y * d.w + door.x]) || {}).sprite;
-    await LMDebug.walk('U'); await LMDebug.walk('U'); await LMDebug.ff(3); out.map = World.mapId; out.x = World.p.x; out.kind = World.kindAt(World.p.x, World.p.y); out.walk = !World.cellSolid(World.p.x, World.p.y);
-    await LMDebug.walk('D'); await LMDebug.walk('D'); await LMDebug.ff(3); out.back = World.mapId + ':' + World.p.x + ',' + World.p.y;
+    await LMDebug.walk('R'); await LMDebug.walk('R'); await LMDebug.ff(3); out.map = World.mapId; out.x = World.p.x; out.y = World.p.y; out.kind = World.kindAt(World.p.x, World.p.y); out.walk = !World.cellSolid(World.p.x, World.p.y);
+    await LMDebug.walk('L'); await LMDebug.walk('L'); await LMDebug.ff(3); out.back = World.mapId + ':' + World.p.x + ',' + World.p.y;
     Engine.manual = false; return out;
   });
   ok(play.doorTile === 't_door', 'Im Spiel: Tür-Übergang liegt weiter auf der Haustür');
-  ok(play.map === 'route1' && play.x === 9 && play.walk, 'Im Spiel: vom Dorf nach Norden landet man weiter auf dem Weg von Route 1 (x=' + play.x + ')');
-  ok(play.back === 'welpenhain:12,1', 'Im Spiel: und zurück wieder auf dem Dorfweg: ' + play.back);
+  ok(play.map === 'route1' && play.x === 0 && play.y === 6 && play.walk, 'Im Spiel: vom Dorf nach Osten landet man weiter auf dem Weg von Route 1 (' + play.x + ',' + play.y + ')');
+  ok(play.back === 'welpenhain:30,10', 'Im Spiel: und zurück wieder in derselben Reihe des Dorfes: ' + play.back);
   // zurück in den Editor, Rückgängig stellt die alte Grösse her
   await page.evaluate(() => Engine.toggleEditor()); await page.waitForTimeout(300);
   await page.locator('.ed-top button').nth(1).tap(); await page.waitForTimeout(300);
-  ok(await page.evaluate(b => { const m = Data.map('welpenhain'); return m.w === b.w && m.h === b.h && m.connections.north.offset === b.north && Data.map('route1').connections.south.offset === b.r1south && m.npcs[0].x === b.npc[0][0]; }, before), 'Rückgängig stellt Grösse, Inhalte und Ränder wieder her');
+  ok(await page.evaluate(b => { const m = Data.map('welpenhain'); return m.w === b.w && m.h === b.h && m.connections.east.offset === b.east && Data.map('route1').connections.west.offset === b.r1west && m.npcs[0].x === b.npc[0][0]; }, before), 'Rückgängig stellt Grösse, Inhalte und Ränder wieder her');
   // Verkleinern (negative Werte) und ungültige Grösse
   await page.locator('.ed-tools button', { hasText: /^Grösse/ }).tap(); await page.waitForTimeout(150);
   await page.locator('.ed-modal input[type=number]').nth(0).fill('-6'); await page.locator('.ed-modal .ed-ok').tap(); await page.waitForTimeout(250);
-  ok(await page.evaluate(() => { const m = Data.map('welpenhain'); return m.w === 14 && m.h === 18 && m.npcs.every(n => n.x < 14) && m.warps.every(w => w.x < 14); }), 'Verkleinern mit negativer Zahl: 14 × 18, alles bleibt innerhalb der Karte');
+  ok(await page.evaluate(() => { const m = Data.map('welpenhain'); return m.w === 18 && m.h === 18 && m.npcs.every(n => n.x < 18) && m.warps.every(w => w.x < 18); }), 'Verkleinern mit negativer Zahl: 18 × 18, alles bleibt innerhalb der Karte');
   await page.locator('.ed-tools button', { hasText: /^Grösse/ }).tap(); await page.waitForTimeout(150);
   await page.locator('.ed-modal input[type=number]').nth(1).fill('-30'); await page.locator('.ed-modal .ed-ok').tap(); await page.waitForTimeout(250);
   ok(await page.evaluate(() => Data.map('welpenhain').h === 18 && !!document.querySelector('.ed-toast.bad')), 'Ungültige Grösse wird mit Meldung abgelehnt');

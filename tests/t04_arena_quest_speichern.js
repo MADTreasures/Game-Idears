@@ -1,4 +1,4 @@
-// Durchlauf Teil 3: Arena, Medaille, Wächter, Route 2, Rivale, Quest, Speichern/Laden, Niederlage, Flucht, Items/Wechsel/Status im Kampf
+// Durchlauf Teil 3: Arena (Flug), Medaille, Wächter, Route 2, Rivale, Quest, Speichern/Laden, Niederlage, Flucht, Items/Wechsel/Status im Kampf
 const { open, ff, press, mash, snap, montage, newGame, installBot } = require('./lib.js');
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) process.exitCode = 1; };
 (async () => {
@@ -11,69 +11,69 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
     World.enter('bellstadt', 4, 6, 'up'); World.encCooldown = 9999;
   });
   await ff(page, 5);
-  // Wächter blockiert den Ostausgang
-  ok(await ev(() => !World.ents.find(e => e.def.id === 'waechter').hidden && World.ents.find(e => e.def.id === 'waechter2').hidden), 'Wächter steht ohne Medaille im Weg');
-  ok(await ev(() => Bot.path(23, 13) === null), 'Ostausgang ohne Medaille nicht erreichbar');
+  // Wächter blockiert das Nordtor
+  ok(await ev(() => !Bot.ent('waechter').hidden && Bot.ent('waechter_ok').hidden), 'Wächter steht ohne Medaille im Weg');
+  ok(await ev(() => Bot.path(13, 0) === null), 'Nordtor ohne Medaille nicht erreichbar');
   // Quest annehmen
-  await ev(() => Bot.goto(13, 5)); await ev(() => Bot.step('U')); await ev(() => Bot.free());
+  await ev(() => Bot.door('haus_oma'));
   ok(await ev(() => World.mapId === 'haus_oma'), 'Haus von Oma Hilde betreten');
   await ev(() => Bot.goto(4, 3)); await ev(() => Bot.talk('right')); await ev(() => Bot.free());
   ok(await ev(() => G.quests.glocke === 'active'), 'Quest "Omas Glöckchen" gestartet');
-  await ev(() => Bot.goto(2, 5)); await ev(() => Bot.step('D')); await ev(() => Bot.free());
+  await ev(() => Bot.out());
   // --- Arena ---
-  await ev(() => Bot.goto(4, 5)); await ev(() => Bot.step('U')); await ev(() => Bot.free());
+  await ev(() => Bot.door('arena'));
   ok(await ev(() => World.mapId === 'arena'), 'Arena betreten: ' + await ev(() => Bot.st()));
   await ff(page, 10); await snap(page, 'arena');
   // Leiterin vor den Trainern ansprechen -> verweigert
-  await ev(() => { World.p.x = 4; World.p.y = 2; World.p.dir = 'up'; }); await ev(() => Bot.talk('up')); await ff(page, 60); await snap(page, 'wanda_verweigert');
-  ok(await ev(() => !Battle.active && /Langsam|Beweise/.test(UI.tb.lines.join(' '))), 'Leiterin verlangt zuerst Siege über die Arena-Trainer: ' + await ev(() => UI.tb.lines.join(' ')));
+  await ev(() => { World.p.x = 4; World.p.y = 2; World.p.dir = 'up'; }); await ev(() => Bot.talk('up')); await ff(page, 60); await snap(page, 'falk_verweigert');
+  ok(await ev(() => !Battle.active && /stürmisch|Beweise/.test(UI.tb.lines.join(' '))), 'Leiter verlangt zuerst Siege über die Arena-Trainer: ' + await ev(() => UI.tb.lines.join(' ')));
   await ev(() => Bot.free()); await ev(() => { World.p.x = 4; World.p.y = 9; });
-  // regulär durch die Arena: Karl (Sicht) -> Mona (Sicht) -> Wanda
+  // regulär durch die Arena: Till (Sicht) -> Vroni (Sicht) -> Falk
   await ev(() => Bot.goto(1, 5));
-  ok(await ev(() => G.defeated.karl), 'Arena-Trainer Karl besiegt (Sichtlinie)');
+  ok(await ev(() => G.defeated.till), 'Arena-Trainer Till besiegt (Sichtlinie)');
   await ev(() => Bot.goto(6, 2));
-  ok(await ev(() => G.defeated.mona), 'Arena-Trainerin Mona besiegt (Sichtlinie)');
+  ok(await ev(() => G.defeated.vroni), 'Arena-Trainerin Vroni besiegt (Sichtlinie)');
   await ev(() => Bot.goto(4, 2)); await ev(() => Bot.talk('up'));
-  await mash(page, 'Battle.active && Battle.v && Battle.v.eKind === "trainer"', 3000); await ff(page, 40); await snap(page, 'wanda');
-  await mash(page, 'Battle.active && Battle.v.pHud && UI.layers.some(l => l.o && l.o.cols === 2)', 4000); await snap(page, 'wanda_kampf');
+  await mash(page, 'Battle.active && Battle.v && Battle.v.eKind === "trainer"', 3000); await ff(page, 40); await snap(page, 'falk');
+  await mash(page, 'Battle.active && Battle.v.pHud && UI.layers.some(l => l.o && l.o.cols === 2)', 4000); await snap(page, 'falk_kampf');
   const moneyBefore = await ev(() => G.money);
   await ev(() => Bot.free(60000)); await ff(page, 10); await snap(page, 'nach_arena');
-  ok(await ev(() => G.badges.includes('gym1') && G.defeated.wanda), 'Arenaleiterin besiegt, Buddelmedaille erhalten');
-  ok(await ev(() => Bag.count('profileine') === 2), 'Arena-Belohnung (2 Profileinen) erhalten');
-  ok(await ev(m => G.money === m + 1200, moneyBefore), 'Preisgeld $1200 erhalten');
+  ok(await ev(() => G.badges.includes('gym1') && G.defeated.falk), 'Arenaleiter besiegt, Federmedaille erhalten');
+  ok(await ev(() => Bag.count('starkleine') === 3), 'Arena-Belohnung (3 Starkleinen) erhalten');
+  ok(await ev(m => G.money === m + 1000, moneyBefore), 'Preisgeld $1000 erhalten');
   // erneut ansprechen: keine zweite Belohnung
   await ev(() => Bot.talk('up')); await ev(() => Bot.free());
-  ok(await ev(() => Bag.count('profileine') === 2 && G.badges.length === 1), 'Belohnung wird nicht doppelt vergeben');
+  ok(await ev(() => Bag.count('starkleine') === 3 && G.badges.length === 1), 'Belohnung wird nicht doppelt vergeben');
   // Medaillen-Menü
   await press(page, 'start', 6); await press(page, 'down', 3); await press(page, 'down', 3); await press(page, 'down', 3); await press(page, 'down', 3); await press(page, 'a', 8); await snap(page, 'medaillen');
   await press(page, 'b', 6); await press(page, 'up', 3); await press(page, 'a', 8); await snap(page, 'pass'); await press(page, 'a', 6); await snap(page, 'pass2'); await press(page, 'b', 6);
   await press(page, 'up', 3); await press(page, 'up', 3); await press(page, 'up', 3); await press(page, 'a', 8); await snap(page, 'lexikon'); await press(page, 'down', 3); await press(page, 'down', 3); await press(page, 'a', 8); await snap(page, 'lexikon2');
   await press(page, 'b', 6); await press(page, 'b', 6); await press(page, 'b', 6); await ff(page, 5);
   // Arena verlassen, Wächter ist weg
-  await ev(() => Bot.goto(4, 9)); await ev(() => Bot.step('D')); await ev(() => Bot.free());
-  ok(await ev(() => World.mapId === 'bellstadt' && World.ents.find(e => e.def.id === 'waechter').hidden && !World.ents.find(e => e.def.id === 'waechter2').hidden), 'Wächter hat den Weg freigegeben');
+  await ev(() => Bot.out());
+  ok(await ev(() => World.mapId === 'bellstadt' && Bot.ent('waechter').hidden && !Bot.ent('waechter_ok').hidden), 'Wächter hat den Weg freigegeben');
   // Shop-Sortiment mit Medaille
-  ok(await ev(() => Data.shop('shop_bellstadt').stock.filter(s => Cond.all(s.cond)).length === 11), 'Shop schaltet neue Ware frei');
+  ok(await ev(() => Data.shop('shop_bellstadt').stock.filter(s => Cond.all(s.cond)).length === 7), 'Shop schaltet neue Ware frei');
   // --- Route 2 ---
-  await ev(() => Bot.goto(23, 13)); await ev(() => Bot.step('R')); await ev(() => Bot.step('R'));
+  await ev(() => Bot.edge('north', 'route2'));
   ok(await ev(() => World.mapId === 'route2'), 'Route 2 freigeschaltet und betreten: ' + await ev(() => Bot.st()));
   await ff(page, 20); await snap(page, 'route2');
-  await ev(() => Bot.goto(21, 6)); 
-  ok(await ev(() => G.defeated.otto || G.defeated.mia || true), 'Route-2-Trainer unterwegs');
-  await ev(() => Bot.talk('right')); await mash(page, 'Battle.active && Battle.v && Battle.v.eKind === "trainer"', 3000);
-  ok(await ev(() => Battle.active && Battle.cfg.trainer.id === 'rival2_b'), 'Rivale kämpft passend zum Starter (rival2_b): ' + await ev(() => Battle.cfg && Battle.cfg.trainer && Battle.cfg.trainer.id));
+  // Der Rivale steht als Trainer am Engpass; welche Variante sichtbar ist, hängt vom gewählten Starter ab (hier 2 = Quappel).
+  ok(await ev(() => !Bot.ent('rival_b').hidden && Bot.ent('rival_a').hidden && Bot.ent('rival_c').hidden), 'Rivale steht passend zum Starter am Weg (Variante b)');
+  await ev(() => LMDebug.walk('UUU')); await mash(page, 'Battle.active && Battle.v && Battle.v.eKind === "trainer"', 3000);
+  ok(await ev(() => Battle.active && Battle.cfg.trainer.id === 'rival2_b'), 'Rivale fordert auf Sicht heraus (rival2_b): ' + await ev(() => Battle.cfg && Battle.cfg.trainer && Battle.cfg.trainer.id));
   await ev(() => Bot.free(60000));
-  ok(await ev(() => Game.flag('rival2_done') && World.ents.find(e => e.def.id === 'rival').hidden), 'Rivale besiegt und verschwunden');
-  await ev(() => Bot.goto(25, 6)); await ev(() => Bot.talk('down')); await ev(() => Bot.free());
-  ok(await ev(() => Bag.count('meisterleine') === 1), 'Meisterleine am Ende von Route 2 gefunden');
-  ok(await ev(() => World.ents.find(e => e.def.id === 'item2').hidden), 'Aufgesammelter Gegenstand verschwindet von der Karte');
+  ok(await ev(() => G.defeated.rival2_b), 'Rivale besiegt');
+  await ev(() => Bot.goto(2, 7)); await ev(() => Bot.talk('left')); await ev(() => Bot.free());
+  ok(await ev(() => Bag.count('supertrank') === 1), 'Supertrank am Teich von Route 2 gefunden (Trainer unterwegs besiegt: ' + await ev(() => Object.keys(G.defeated).join(',')) + ')');
+  ok(await ev(() => Bot.ent('item2').hidden), 'Aufgesammelter Gegenstand verschwindet von der Karte');
   // --- Quest: Glöckchen auf Route 1 holen ---
-  await ev(() => { World.enter('route1', 17, 15, 'up'); }); await ff(page, 3);
+  await ev(() => { World.enter('route1', 28, 10, 'up'); }); await ff(page, 3);
   ok(await ev(() => !World.ents.find(e => e.def.id === 'glocke').hidden), 'Quest-Gegenstand ist bei aktiver Quest sichtbar');
   await ev(() => Bot.talk('up')); await ev(() => Bot.free());
   ok(await ev(() => Bag.count('gloeckchen') === 1), 'Glöckchen gefunden');
   await ev(() => { World.enter('haus_oma', 4, 3, 'right'); }); await ff(page, 3); await ev(() => Bot.talk('right')); await ev(() => Bot.free());
-  ok(await ev(() => G.quests.glocke === 'done' && Bag.count('gloeckchen') === 0 && Bag.count('starkleine') === 3), 'Quest abgeschlossen: Glöckchen abgegeben, 3 Starkleinen erhalten');
+  ok(await ev(() => G.quests.glocke === 'done' && Bag.count('gloeckchen') === 0 && Bag.count('starkleine') === 6), 'Quest abgeschlossen: Glöckchen abgegeben, 3 weitere Starkleinen erhalten');
   await ev(() => Bot.talk('right')); await ff(page, 50);
   ok(await ev(() => /Danke/.test(UI.tb.lines.join(' '))), 'NPC-Dialog ändert sich nach der Quest: ' + await ev(() => UI.tb.lines.join(' ')));
   await ev(() => Bot.free());

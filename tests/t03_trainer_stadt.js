@@ -9,12 +9,12 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   await ev(() => {
     const m = Mon.create('glutwelp', 15); m.exp = Mon.expFor(Mon.sp(m), 16) - 3; Mon.give(m);
     G.flags.has_starter = true; G.flags.has_dex = true; G.vars.starter = 1; Bag.add('leine', 5); Bag.add('trank', 2);
-    World.enter('route1', 7, 23, 'up'); World.encCooldown = 99;
+    World.enter('route1', 7, 8, 'right'); World.encCooldown = 99;
   });
   await ff(page, 5);
   ok(await ev(() => G.party[0].moves.length === 4), 'Lv15-Glutwelp hat 4 Attacken: ' + await ev(() => G.party[0].moves.map(m => m.id).join(',')));
-  // Timo steht bei (4,20) und schaut nach rechts (Sichtweite 3)
-  await ev(() => LMDebug.walk('UUU')); await ff(page, 30); await snap(page, 'trainer_sieht');
+  // Timo steht bei (10,5) und schaut nach unten (Sichtweite 3)
+  await ev(() => LMDebug.walk('RRR')); await ff(page, 30); await snap(page, 'trainer_sieht');
   ok(await ev(() => World.lock > 0), 'Trainer entdeckt den Spieler: ' + await ev(() => Bot.st()));
   await mash(page, 'Battle.active && Battle.v && Battle.v.eKind === "trainer"', 3000); await ff(page, 40); await snap(page, 'trainer_intro');
   await mash(page, 'Battle.active && Battle.v.pHud && UI.layers.some(l => l.o && l.o.cols === 2)', 4000); await snap(page, 'trainerkampf');
@@ -47,13 +47,13 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   await press(page, 'a', 10); await ev(() => Bot.free(20000)); await fight;
   ok(await ev(old => G.party[0].moves.length === 4 && G.party[0].moves[0].id === 'flammenbiss' && !G.party[0].moves.some(m => m.id === old), old), 'Flammenbiss ersetzt ' + old + ': ' + await ev(() => G.party[0].moves.map(m => m.id).join(',')));
   // --- Nach Bellstadt ---
-  await ev(() => { World.encCooldown = 9999; G.defeated.lena = true; });
-  await ev(() => Bot.goto(9, 0)); await ev(() => Bot.step('U')); await ev(() => Bot.step('U'));
+  await ev(() => { World.encCooldown = 9999; G.defeated.lena = true; G.defeated.sepp = true; });
+  await ev(() => Bot.edge('east', 'bellstadt'));
   ok(await ev(() => World.mapId === 'bellstadt'), 'Bellstadt erreicht: ' + await ev(() => Bot.st()));
   await ff(page, 20); await snap(page, 'bellstadt');
   // --- Heilzentrum ---
   await ev(() => { G.party[0].hp = 5; G.party[0].status = 'poison'; G.party[0].moves[0].pp = 0; });
-  await ev(() => Bot.goto(4, 12)); await ev(() => Bot.step('U')); await ev(() => Bot.free());
+  await ev(() => Bot.door('heilzentrum'));
   ok(await ev(() => World.mapId === 'heilzentrum'), 'Heilzentrum betreten');
   await ev(() => Bot.goto(3, 3)); await ev(() => Bot.talk('up')); await mash(page, '/JA/.test(Bot.text())', 600); await snap(page, 'heilfrage');
   await press(page, 'a', 60); await mash(page, 'UI.layers.some(l => String(l.draw).includes("lit"))', 600); await ff(page, 50); await snap(page, 'heilung');
@@ -80,9 +80,9 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   ok(await ev(() => Mon.give(Mon.create('kiesling', 3)) === 'storage' && G.storage.length === 2), 'Volles Team: neues Monster wird automatisch eingelagert');
   await ev(() => { G.party.length = 2; });
   // --- Shop ---
-  await ev(() => Bot.goto(4, 5)); await ev(() => Bot.step('D')); await ev(() => Bot.free());
-  ok(await ev(() => World.mapId === 'bellstadt' && World.p.x === 4 && World.p.y === 12), 'Heilzentrum verlassen: ' + await ev(() => Bot.st()));
-  await ev(() => Bot.goto(14, 12)); await ev(() => Bot.step('U')); await ev(() => Bot.free());
+  await ev(() => Bot.out());
+  ok(await ev(() => World.mapId === 'bellstadt' && World.p.x === 4 && World.p.y === 15), 'Heilzentrum verlassen: ' + await ev(() => Bot.st()));
+  await ev(() => Bot.door('shop'));
   ok(await ev(() => World.mapId === 'shop'), 'Shop betreten');
   const money0 = await ev(() => G.money), leine0 = await ev(() => Bag.count('leine'));
   await ev(() => Bot.goto(1, 3)); await ev(() => Bot.talk('up')); await mash(page, '/KAUFEN/.test(Bot.text())', 600); await snap(page, 'shop');

@@ -5,8 +5,8 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   const { browser, page, errors } = await open();
   const ev = (f, a) => page.evaluate(f, a);
   await newGame(page);
-  await ev(() => { Mon.give(Mon.create('quappel', 14)); G.flags.has_starter = true; G.flags.has_dex = true; Bag.add('leine', 5); World.enter('arena', 4, 2, 'up'); G.defeated.karl = G.defeated.mona = true; });
-  // Wanda: Trainer setzt Trank ein, wenn LP < 30 %
+  await ev(() => { Mon.give(Mon.create('quappel', 14)); G.flags.has_starter = true; G.flags.has_dex = true; Bag.add('leine', 5); World.enter('arena', 4, 2, 'up'); G.defeated.till = G.defeated.vroni = true; });
+  // Falk: Trainer setzt Trank ein, wenn LP < 30 %
   let log = [];
   await ev(() => { window.__says = []; const o = UI.say; UI.say = function (t, opts) { window.__says.push(UI.subst(t)); return o.call(UI, t, opts); }; });
   await ev(() => Bot.talk('up'));
@@ -16,7 +16,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   await press(page, 'a', 8); const wi = await ev(() => Battle.P().moves.findIndex(m => m.id === 'wedler' || m.id === 'panzern'));
   await ev(i => { UI.layers[UI.layers.length - 1].sel = i; }, wi); await press(page, 'a', 8);
   await page.evaluate(() => LMDebug.until(() => UI.layers.some(l => l.o && l.o.cols === 2), 4000, 'a'));
-  ok(await ev(() => window.__says.some(s => /Wanda setzt Trank ein/.test(s)) && Battle.E().hp > 3), 'Arenaleiterin benutzt einen Trank: LP ' + await ev(() => Battle.E().hp));
+  ok(await ev(() => window.__says.some(s => /Falk setzt Trank ein/.test(s)) && Battle.E().hp > 3), 'Arenaleiter benutzt einen Trank: LP ' + await ev(() => Battle.E().hp));
   await ev(() => { Math.random = window.__rnd; });
   // Verwirrung und Paralyse am Gegner: Meldungen erscheinen
   await ev(() => { Battle.es.confuse = 3; });
@@ -30,7 +30,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   // Niederlage gegen Trainer -> Whiteout, Trainer NICHT besiegt, Script abgebrochen
   await ev(() => { G.respawn = { map: 'heilzentrum', x: 3, y: 3, dir: 'up' }; G.party[0].level = 2; G.party[0].hp = 1; Battle.E().status = ''; Battle.es.confuse = 0; });
   await page.evaluate(() => LMDebug.until(() => !World.lock && !Battle.active && Gfx.fade === 0, 30000, 'a'));
-  ok(await ev(() => World.mapId === 'heilzentrum' && !G.defeated.wanda && !G.badges.length), 'Niederlage im Trainerkampf: zurück im Heilzentrum, keine Medaille');
+  ok(await ev(() => World.mapId === 'heilzentrum' && !G.defeated.falk && !G.badges.length), 'Niederlage im Trainerkampf: zurück im Heilzentrum, keine Medaille');
   // canLose: Rivalenkampf im Labor verlieren -> Geschichte geht weiter
   await ev(() => { G.party = []; G.flags = {}; G.vars = {}; G.defeated = {}; G.bag = {}; G.money = 3000; World.enter('labor', 2, 5, 'up'); });
   await ev(() => Bot.talk('up')); await mash(page, 'Battle.active && Battle.v.pHud && UI.layers.some(l => l.o && l.o.cols === 2)', 9000);

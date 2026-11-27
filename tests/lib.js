@@ -76,7 +76,9 @@ async function installBot(page) {
             if (Battle.active && top && top.o && top.o.items && top.o.pitch === 10 && !top.o.title) { // Attackenmenü
               const P = Battle.P(); let best = 0, bp = -1; P.moves.forEach((m, k) => { const d = Data.move(m.id); if (m.pp > 0 && d.power > bp) { bp = d.power; best = k; } }); top.sel = best;
             } else if (Battle.active && top && top.o && top.o.cols === 2) top.sel = 0;
-            Input.pend.a = true;
+            // Erzwungener Wechsel (eigenes Monster besiegt): im Teammenü abwechselnd nach unten und A, bis ein kampffähiges gewählt ist.
+            const forced = Battle.active && top && !top.o && top.draw && String(top.draw).includes('drawMonRow') && !Mon.alive(Battle.P());
+            if (forced && (Bot._alt = !Bot._alt)) Input.pend.down = true; else Input.pend.a = true;
           }
           Engine.tick(); await LMDebug.yield();
         }
@@ -95,6 +97,17 @@ async function installBot(page) {
         return false;
       },
       async step(c) { await LMDebug.walk(c); await LMDebug.ff(2); },
+      // Geht durch die Tür der aktuellen Karte, die zur Karte toMap führt. Liefert true, wenn man danach dort ist.
+      async door(toMap) { const w = World.map.warps.find(w => w.toMap === toMap); if (!w || !(await Bot.goto(w.x, w.y + 1))) return false; await Bot.step('U'); await Bot.free(); await LMDebug.ff(10); return World.mapId === toMap; },
+      // Verlässt einen Innenraum über die Fussmatte. Liefert die neue Karten-ID.
+      async out() { const w = World.map.warps.find(w => w.kind === 'push'); await Bot.goto(w.x, w.y); await Bot.step('D'); await Bot.free(); await LMDebug.ff(10); return World.mapId; },
+      // Läuft über den Kartenrand in Richtung dir (north|south|west|east) auf die Nachbarkarte toMap.
+      async edge(dir, toMap) {
+        const m = World.map, cells = []; for (let i = 0; i < (dir === 'east' || dir === 'west' ? m.h : m.w); i++) { const x = dir === 'east' ? m.w - 1 : dir === 'west' ? 0 : i, y = dir === 'south' ? m.h - 1 : dir === 'north' ? 0 : i; if (!World.cellSolid(x, y)) cells.push([x, y]); }
+        for (const [x, y] of cells) { if (await Bot.goto(x, y)) { await Bot.step({ east: 'R', west: 'L', north: 'U', south: 'D' }[dir]); await Bot.free(); await LMDebug.ff(5); } if (World.mapId === toMap) return true; }
+        return false;
+      },
+      ent(id) { return World.ents.find(e => e.def.id === id); },
       async talk(dir) { if (dir) World.p.dir = dir; await LMDebug.press('a', 3); },
       text() { return UI.tb.lines.join(' ') + ' ' + UI.layers.filter(l => l.o && l.o.items).map(l => l.o.items.map(i => typeof i === 'string' ? i : i.label).join('/')).join(' ## '); },
       st() { return JSON.stringify({ map: World.mapId, x: World.p.x, y: World.p.y, lock: World.lock, battle: Battle.active, party: G.party.map(m => m.species + ':' + m.level + ':' + m.hp), money: G.money, bag: G.bag, badges: G.badges }); }
@@ -112,7 +125,7 @@ async function newGame(page) {
   if (idx > 0) { await press(page, 'up', 3); await press(page, 'a', 30); }   // Sicherheitsfrage "Trotzdem neues Spiel?" -> JA
   await mash(page, "UI.layers.some(l => l.draw && String(l.draw).includes('NAME_PAGES'))", 3000);
   await press(page, 'start', 4); await press(page, 'a', 8);                 // Standardname
-  await mash(page, "World.active && !World.lock && Gfx.fade === 0", 6000);
+  await mash(page, "World.active && !World.lock && Gfx.fade === 0", 8000);   // Rivalenname, Schwierigkeitsstufe (Vorgabe MITTEL), Abschlusstext
   await installBot(page);
 }
 module.exports.newGame = newGame;

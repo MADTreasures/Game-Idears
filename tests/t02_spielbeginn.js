@@ -15,15 +15,15 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   await ev(() => Bot.free());
   // Haus verlassen
   await ev(() => Bot.goto(2, 5)); await ev(() => Bot.step('D')); await ev(() => Bot.free());
-  ok(await ev(() => World.mapId === 'welpenhain' && World.p.x === 3 && World.p.y === 5), 'Haus verlassen -> Welpenhain: ' + await ev(() => Bot.st()));
+  ok(await ev(() => World.mapId === 'welpenhain' && World.p.x === 4 && World.p.y === 11), 'Haus verlassen -> Welpenhain: ' + await ev(() => Bot.st()));
   await ff(page, 30); await snap(page, 'dorf');
   // Routensperre
-  await ev(() => Bot.goto(9, 2)); await ev(() => Bot.step('U')); await ff(page, 60); await snap(page, 'sperre');
+  await ev(() => Bot.goto(21, 8)); await ev(() => Bot.step('R')); await ff(page, 60); await snap(page, 'sperre');   // der Ausgang liegt im Osten
   ok(await ev(() => World.lock > 0), 'Routensperre löst aus: ' + await ev(() => Bot.text()));
   await ev(() => Bot.free());
-  ok(await ev(() => World.mapId === 'welpenhain' && World.p.y === 2), 'Spieler wurde zurückgeschoben: ' + await ev(() => Bot.st()));
+  ok(await ev(() => World.mapId === 'welpenhain' && World.p.x === 21 && World.p.y === 8), 'Spieler wurde zurückgeschoben: ' + await ev(() => Bot.st()));
   // Labor
-  await ev(() => Bot.goto(14, 12)); await ev(() => Bot.step('U')); await ev(() => Bot.free());
+  await ev(() => Bot.door('labor'));
   ok(await ev(() => World.mapId === 'labor'), 'Labor betreten: ' + await ev(() => Bot.st()));
   await ff(page, 10); await snap(page, 'labor');
   // Starter 1 (Glutwelp) wählen
@@ -46,14 +46,15 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   await press(page, 'a', 6); await press(page, 'a', 8); await snap(page, 'werte1'); await press(page, 'a', 6); await snap(page, 'werte2');
   await press(page, 'b', 6); await press(page, 'b', 6); await press(page, 'b', 6); await press(page, 'b', 6); await ff(page, 5);
   // Route 1
-  await ev(() => Bot.goto(4, 7)); await ev(() => Bot.step('D')); await ev(() => Bot.free());
-  await ev(() => Bot.goto(9, 1)); await ev(() => Bot.step('U')); await ev(() => Bot.free()); await ev(() => Bot.step('U')); await ev(() => Bot.step('U'));
+  await ev(() => Bot.out());
+  ok(await ev(() => Bot.path(23, 8) !== null), 'Mit Starter ist der Ostausgang frei');
+  await ev(() => Bot.edge('east', 'route1'));
   ok(await ev(() => World.mapId === 'route1'), 'Nahtloser Übergang auf Route 1: ' + await ev(() => Bot.st()));
   await ff(page, 30); await snap(page, 'route1');
   // Wilde Begegnung erzwingen: im Gras laufen
-  await ev(async () => { World.encCooldown = 0; await Bot.goto(13, 20, { grassOk: true }); });
+  await ev(async () => { World.encCooldown = 0; await Bot.goto(7, 2, { grassOk: true }); });   // Grasfeld oben links, ausser Sichtweite der Trainer
   let found = false;
-  for (let i = 0; i < 60 && !found; i++) { await ev(() => LMDebug.walk(World.p.x >= 15 ? 'L' : 'R')); await ff(page, 2); found = await ev(() => World.lock > 0 || Battle.active); if (!found && await ev(() => World.p.x >= 15)) await ev(() => LMDebug.walk('LLL')); }
+  for (let i = 0; i < 60 && !found; i++) { await ev(() => LMDebug.walk(World.p.x >= 10 ? 'L' : 'R')); await ff(page, 2); found = await ev(() => World.lock > 0 || Battle.active); if (!found && await ev(() => World.p.x >= 10)) await ev(() => LMDebug.walk('LLL')); }
   ok(found, 'Wilde Begegnung im hohen Gras');
   await mash(page, 'Battle.active && Battle.v && Battle.v.pHud && UI.layers.some(l => l.o && l.o.cols === 2)', 4000); await snap(page, 'wildkampf');
   ok(await ev(() => Battle.cfg.kind === 'wild' && !!G.seen[Battle.E().species]), 'Wildes Monster: ' + await ev(() => Battle.E().species + ' Lv' + Battle.E().level));
