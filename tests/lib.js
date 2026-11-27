@@ -1,4 +1,5 @@
-// Gemeinsame Testhelfer (Playwright) für Leinenmeister.html.
+// Gemeinsame Testhelfer (Playwright). Spieltests laufen gegen Leinenmeister.html (reines Spiel ohne Editor),
+// Editor-Tests gegen Leinenmeister-Editor.html (mit #spiel in der Adresse startet sie am Titelbild).
 // Aufruf aller Tests:  node tests/run_all.js   (einzeln: node tests/t02_spielbeginn.js)
 // Andere Datei testen: LM_FILE=/pfad/zur/Datei.html node tests/run_all.js
 // Bildschirmfotos landen in tests/out/.

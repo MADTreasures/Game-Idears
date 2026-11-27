@@ -2,7 +2,7 @@
 // Sperre bleibt nach Neuladen, spätestes Verfallsdatum, zurückgestellte Uhr, normale Datei unverändert.
 const { chromium } = require('playwright'); const path = require('path'), fs = require('fs');
 const OUT = path.join(__dirname, 'out'); fs.mkdirSync(OUT, { recursive: true });
-const FILE = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html');
+const GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html'), FILE = GAME.replace(/\.html$/, '-Editor.html');   // GAME = reines Spiel, FILE = Editor-Datei
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) process.exitCode = 1; };
 const codeOf = html => { const a = html.indexOf('id="lm-engine">') + 15, b = html.indexOf('</' + 'script>', a); return html.slice(a, b); };
 const H = 3600000;
@@ -16,8 +16,8 @@ async function fresh(file, shift, vp) {   // shift = Zeitverschiebung der Browse
 const shotScreen = async (page, name) => { await page.evaluate(() => Engine.draw()); await (await page.$('#lm-screen')).screenshot({ path: path.join(OUT, name) }); };
 (async () => {
   // --- 1) Testversion über den Editor-Dialog exportieren (echter Download) ---
-  let s = await fresh(FILE);
-  ok(await s.page.evaluate(() => !Trial.active()), 'Normale Spieldatei: keine Testversion aktiv');
+  let s = await fresh(FILE + '#spiel');
+  ok(await s.page.evaluate(() => !Trial.active()), 'Editor-Datei: keine Testversion aktiv');
   await s.page.keyboard.press('F2'); await s.page.waitForTimeout(300);
   await s.page.click('.ed-nav button[data-page="project"]'); await s.page.waitForTimeout(150);
   await s.page.locator('#ed-root button', { hasText: 'Testversion exportieren' }).first().click(); await s.page.waitForTimeout(150);
@@ -28,14 +28,14 @@ const shotScreen = async (page, name) => { await page.evaluate(() => Engine.draw
   const tfile = path.join(OUT, 'Leinenmeister-Testversion.html'); await d.saveAs(tfile);
   ok(/_Testversion\.html$/.test(d.suggestedFilename()), 'Download: ' + d.suggestedFilename());
   ok(s.errors.length === 0, 'keine JS-Fehler beim Export' + (s.errors.length ? ': ' + s.errors.join(' | ') : '')); await s.browser.close();
-  const t = fs.readFileSync(tfile, 'utf8'), orig = fs.readFileSync(FILE, 'utf8');
+  const t = fs.readFileSync(tfile, 'utf8'), orig = fs.readFileSync(GAME, 'utf8');
   const cfg = JSON.parse(/window\.LM_TRIAL = (\{[^}]*\});/.exec(t.slice(0, 2000))[1]);
-  ok(codeOf(t) === codeOf(orig), 'Programmcode der Testversion ist identisch mit der Spieldatei');
+  ok(codeOf(t) === codeOf(orig) && !/\nconst Editor\b/.test(t), 'Programmcode der Testversion ist identisch mit der reinen Spieldatei (kein Editor enthalten)');
   ok(cfg.hours === 24 && Math.abs(cfg.until - Date.now() - 8 * 24 * H) < 5 * 60000, 'Schalter: 24 Stunden Laufzeit, spätestens gültig bis ' + new Date(cfg.until).toISOString().slice(0, 16));
   // --- 2) Testversion spielen: Editor gesperrt ---
   s = await fresh(tfile, 0, { width: 700, height: 660 });
   ok(await s.page.evaluate(() => Trial.active() && !Trial.expired && !Trial.locked), 'Testversion startet normal');
-  ok(await s.page.evaluate(() => document.getElementById('lm-btn-editor').style.display === 'none' && !/Editor/.test(document.getElementById('lm-keys').textContent)), 'Editor-Schaltfläche und -Hinweis ausgeblendet');
+  ok(await s.page.evaluate(() => !document.getElementById('lm-btn-editor') && !/Editor/.test(document.getElementById('lm-keys').textContent) && !LM_hasEditor()), 'Kein Editor in der Testversion: keine Schaltfläche, kein Hinweis, kein Editor-Code');
   await s.page.keyboard.press('F2'); await s.page.waitForTimeout(200);
   ok(await s.page.evaluate(() => !Engine.editorOpen && !document.querySelector('#ed-root.open')), 'F2 öffnet den Editor in der Testversion nicht');
   await s.page.evaluate(async () => { Engine.manual = true; Opt.text = 2; await LMDebug.ff(20); });

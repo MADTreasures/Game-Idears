@@ -1,13 +1,13 @@
 // Robustheit: leeres bzw. beschädigtes Projekt darf den Editor nicht zum Absturz bringen; Aufbau von Null.
 const { chromium } = require('playwright'); const path = require('path');
-const OUT = path.join(__dirname, 'out'), FILE = process.argv[2] || process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html');
+const OUT = path.join(__dirname, 'out'), GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html'), FILE = process.argv[2] || GAME.replace(/\.html$/, '-Editor.html'), URL0 = 'file://' + FILE + '#spiel';   // FILE = Editor-Datei; #spiel = im Spiel starten (der Test öffnet den Editor selbst)
 require('fs').mkdirSync(OUT, { recursive: true });
 let pass = 0, fail = 0; const fails = [];
 function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name); } else { fail++; fails.push(name); console.log('  FAIL ' + name + (info !== undefined ? '  -> ' + JSON.stringify(info) : '')); } }
 (async () => {
   const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1400, height: 860 }, deviceScaleFactor: 1 }); const errs = [];
   p.on('pageerror', e => errs.push('PAGEERROR ' + e.message)); p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await p.goto('file://' + FILE); await p.waitForTimeout(400); await p.keyboard.press('F2'); await p.waitForTimeout(200);
+  await p.goto(URL0); await p.waitForTimeout(400); await p.keyboard.press('F2'); await p.waitForTimeout(200);
   const ev = (fn, a) => p.evaluate(fn, a);
   const allPages = async tag => { const ids = await ev(() => Editor.PAGES.filter(x => x[0] !== '-').map(x => x[0])); for (const id of ids) { await p.click('.ed-nav button[data-page="' + id + '"]'); await p.waitForTimeout(60); const bad = await ev(() => { const e = document.querySelector('.ed-main > .ed-err, .ed-main > .ed-form.ed-err'); return e ? e.textContent : ''; }); if (bad) errs.push(tag + ' Seite ' + id + ': ' + bad); } };
   const btn = async (text, scope) => { await p.locator((scope || '#ed-root') + ' button', { hasText: text }).first().click(); await p.waitForTimeout(60); };

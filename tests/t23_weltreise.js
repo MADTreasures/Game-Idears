@@ -8,7 +8,7 @@ const T0 = Date.now(), ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + 
   await newGame(page); lap('Spielstart');
   // ---------- statische Prüfung: Erreichbarkeit auf allen Karten ----------
   const reach = await ev(() => {
-    const bad = [], solid = (m, x, y) => x < 0 || y < 0 || x >= m.w || y >= m.h || Editor.cellSolid(m, x, y), kind = (m, x, y) => { for (const l of ['objects', 'deco', 'ground']) { const t = Data.tile(m.layers[l][y * m.w + x]); if (t && t.kind) return t.kind; } return ''; };
+    const bad = [], solid = (m, x, y) => x < 0 || y < 0 || x >= m.w || y >= m.h || Data.solidAt(m, x, y), kind = (m, x, y) => { for (const l of ['objects', 'deco', 'ground']) { const t = Data.tile(m.layers[l][y * m.w + x]); if (t && t.kind) return t.kind; } return ''; };
     for (const m of DB.maps) {
       const start = [];
       for (const o of DB.maps) for (const w of o.warps) if (w.toMap === m.id) start.push([w.toX, w.toY]);

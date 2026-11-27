@@ -2,7 +2,7 @@
 // Teich löschen, NPC wählen/ziehen/löschen, Bereich mit Inhalt löschen, Rückgängig.
 const { chromium } = require('playwright'); const path = require('path');
 const OUT = path.join(__dirname, 'out'); require('fs').mkdirSync(OUT, { recursive: true });
-const FILE = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html');
+const FILE = (process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html')).replace(/\.html$/, '-Editor.html') + '#spiel';   // Editor-Datei; #spiel = im Spiel starten (der Test öffnet den Editor selbst)
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) process.exitCode = 1; };
 (async () => {
   const browser = await chromium.launch(); const ctx = await browser.newContext({ viewport: { width: 412, height: 800 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });

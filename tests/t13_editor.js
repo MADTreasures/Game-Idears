@@ -1,6 +1,6 @@
 // Funktionstest des Editors über die echte Oberfläche (Klicks, Dialoge, Zeichnen) + Zustandsprüfungen.
 const { chromium } = require('playwright'); const path = require('path'), fs = require('fs');
-const OUT = path.join(__dirname, 'out'), FILE = process.argv[2] || process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html');
+const OUT = path.join(__dirname, 'out'), GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html'), FILE = process.argv[2] || GAME.replace(/\.html$/, '-Editor.html'), URL0 = 'file://' + FILE + '#spiel';   // FILE = Editor-Datei; #spiel = im Spiel starten (der Test öffnet den Editor selbst)
 require('fs').mkdirSync(OUT, { recursive: true });
 let pass = 0, fail = 0; const fails = [];
 function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name); } else { fail++; fails.push(name); console.log('  FAIL ' + name + (info !== undefined ? '  -> ' + JSON.stringify(info) : '')); } }
@@ -8,7 +8,7 @@ function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name)
   const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: 1500, height: 900 }, deviceScaleFactor: 1, acceptDownloads: true });
   const p = await ctx.newPage(); const errs = [];
   p.on('pageerror', e => errs.push('PAGEERROR ' + e.message)); p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await p.goto('file://' + FILE); await p.waitForTimeout(400);
+  await p.goto(URL0); await p.waitForTimeout(400);
   const ev = (fn, a) => p.evaluate(fn, a), nav = async id => { await p.click('.ed-nav button[data-page="' + id + '"]'); await p.waitForTimeout(80); };
   const btn = async (text, scope) => { await p.locator((scope || '#ed-root') + ' button', { hasText: text }).first().click(); await p.waitForTimeout(60); };
   const ok = async () => { await p.click('.ed-modal .ed-ok'); await p.waitForTimeout(80); };
@@ -209,30 +209,34 @@ function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name)
   console.log('9) HTML-Export und erneuter Export');
   // Export mit Validierungsfehler: Rückfrage erscheint, Export bleibt möglich
   await ev(() => { Data.idx.trainers.testtrainer.team[0].species = 'nix'; Editor.commit(); });
-  await btn('HTML exportieren', '.ed-top'); await p.waitForTimeout(150);
+  await btn('Spiel exportieren', '.ed-top'); await p.waitForTimeout(150);
   check('Export zeigt Validierungsfehler vorab', (await p.locator('.ed-modal p').innerText()).indexOf('Monster "nix"') >= 0);
   await p.click('.ed-modal .ed-cancel'); await p.waitForTimeout(100);
   check('Abbruch führt zur Validierungsseite', await ev(() => Editor.page === 'validate'));
   await ev(() => { Data.idx.trainers.testtrainer.team[0].species = DB.monsters[0].id; Editor.commit(); });
-  const [dl2] = await Promise.all([p.waitForEvent('download'), btn('HTML exportieren', '.ed-top')]);
+  const [dl2] = await Promise.all([p.waitForEvent('download'), btn('Spiel exportieren', '.ed-top')]);
   const htmlPath = path.join(OUT, 'edt_export1.html'); await dl2.saveAs(htmlPath);
   const html1 = fs.readFileSync(htmlPath, 'utf8');
-  check('HTML-Export geladen (' + Math.round(html1.length / 1024) + ' KB, ' + dl2.suggestedFilename() + ')', html1.indexOf('id="lm-engine"') > 0 && html1.indexOf('id="lm-data"') > 0 && html1.indexOf('testkarte') > 0);
+  check('Spiel-Export geladen (' + Math.round(html1.length / 1024) + ' KB, ' + dl2.suggestedFilename() + ')', html1.indexOf('id="lm-engine"') > 0 && html1.indexOf('id="lm-data"') > 0 && html1.indexOf('testkarte') > 0);
+  check('Spiel-Export enthält keinen Editor', !/\nconst Editor\b/.test(html1) && html1.split('id="lm-engine"')[0].indexOf('LM_START') < 0);
+  const htmlEd = await ev(() => Project.buildHTML({ editor: true })), htmlPathEd = path.join(OUT, 'edt_export1_editor.html'); fs.writeFileSync(htmlPathEd, htmlEd);
   const ctx2 = await b.newContext({ viewport: { width: 1500, height: 900 }, deviceScaleFactor: 1 }); const p2 = await ctx2.newPage(); const errs2 = [];
   p2.on('pageerror', e => errs2.push('PAGEERROR ' + e.message)); p2.on('console', m => { if (m.type() === 'error') errs2.push('CONSOLE ' + m.text()); });
   await p2.goto('file://' + htmlPath); await p2.waitForTimeout(400);
   check('Exportierte Datei: eingebettete Daten enthalten alle Änderungen (frischer Browser, ohne Arbeitskopie)', await p2.evaluate(() => Project.source === 'embedded' && !!Data.map('testkarte') && Data.map('testkarte').npcs[0].name === 'Pflegerin' && !!Data.idx.monsters.testmon && !!Data.idx.gyms.testarena && !!DB.sprites.test_sprite && DB.prefabs.some(x => x.name === 'Testvorlage')));
-  await p2.keyboard.press('F2'); await p2.waitForTimeout(200);
-  check('Exportierte Datei: Editor öffnet sich', await p2.evaluate(() => Engine.editorOpen && Editor.root.classList.contains('open')));
-  const html2 = await p2.evaluate(() => { DB.maps.find(m => m.id === 'testkarte').name = 'Zweitexport'; Editor.commit(); return Project.buildHTML(); });
+  check('Exportiertes Spiel: kein Editor vorhanden (F2 bewirkt nichts)', await p2.evaluate(() => { Engine.toggleEditor(); return !LM_hasEditor() && !Engine.editorOpen && !document.getElementById('ed-root') && !document.getElementById('lm-btn-editor'); }));
+  const p2b = await ctx2.newPage(); p2b.on('pageerror', e => errs2.push('PAGEERROR2b ' + e.message)); await p2b.goto('file://' + htmlPathEd); await p2b.waitForTimeout(500);
+  check('Exportierte Editor-Datei: startet im Editor, enthält alle Änderungen', await p2b.evaluate(() => Engine.editorOpen && Editor.root.classList.contains('open') && !!Data.map('testkarte') && !!Data.idx.monsters.testmon));
+  const html2 = await p2b.evaluate(() => { DB.maps.find(m => m.id === 'testkarte').name = 'Zweitexport'; Editor.commit(); return Project.buildHTML({ editor: true }); });
   const strip = h => h.replace(/"revision":\d+/, '').replace(/"savedAt":\d+/, '');
   const code = h => h.substring(h.indexOf('id="lm-engine">'), h.indexOf('id="lm-data"'));
-  check('Erneuter Export: identischer Programmcode, geänderte Daten', code(html1) === code(html2) && html2.indexOf('Zweitexport') > 0 && strip(html1) !== strip(html2));
+  check('Erneuter Export: identischer Programmcode, geänderte Daten', code(htmlEd) === code(html2) && html2.indexOf('Zweitexport') > 0 && strip(htmlEd) !== strip(html2));
   const htmlPath2 = path.join(OUT, 'edt_export2.html'); fs.writeFileSync(htmlPath2, html2);
   const p3 = await ctx2.newPage(); p3.on('pageerror', e => errs2.push('PAGEERROR3 ' + e.message)); await p3.goto('file://' + htmlPath2); await p3.waitForTimeout(400);
   check('Zweite Exportgeneration lädt und enthält Änderung', await p3.evaluate(() => Data.map('testkarte').name === 'Zweitexport' && typeof Editor.open === 'function' && typeof Project.buildHTML === 'function'));
-  const orig = fs.readFileSync(FILE, 'utf8');
-  check('Export hat denselben Programmcode wie die Ausgangsdatei', code(orig) === code(html1));
+  const orig = fs.readFileSync(FILE, 'utf8'), game = fs.readFileSync(GAME, 'utf8');
+  check('Editor-Export hat denselben Programmcode wie die Editor-Datei', code(orig) === code(htmlEd));
+  check('Spiel-Export hat denselben Programmcode wie die ausgelieferte Spieldatei', code(game) === code(html1));
   check('Keine Fehler in exportierten Dateien', errs2.length === 0, errs2);
   await ctx2.close();
 

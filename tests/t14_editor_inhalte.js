@@ -1,6 +1,6 @@
 // Zweiter Funktionstest: weitere Editorfunktionen, Touch-Bedienung und "neue Inhalte direkt im Spiel testen".
 const { chromium } = require('playwright'); const path = require('path');
-const OUT = path.join(__dirname, 'out'), FILE = process.argv[2] || process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html');
+const OUT = path.join(__dirname, 'out'), GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html'), FILE = process.argv[2] || GAME.replace(/\.html$/, '-Editor.html'), URL0 = 'file://' + FILE + '#spiel';   // FILE = Editor-Datei; #spiel = im Spiel starten (der Test öffnet den Editor selbst)
 require('fs').mkdirSync(OUT, { recursive: true });
 let pass = 0, fail = 0; const fails = [];
 function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name); } else { fail++; fails.push(name); console.log('  FAIL ' + name + (info !== undefined ? '  -> ' + JSON.stringify(info) : '')); } }
@@ -8,7 +8,7 @@ function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name)
   const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: 1500, height: 900 }, deviceScaleFactor: 1 });
   const p = await ctx.newPage(); const errs = [];
   p.on('pageerror', e => errs.push('PAGEERROR ' + e.message)); p.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await p.goto('file://' + FILE); await p.waitForTimeout(400);
+  await p.goto(URL0); await p.waitForTimeout(400);
   const ev = (fn, a) => p.evaluate(fn, a), nav = async id => { await p.click('.ed-nav button[data-page="' + id + '"]'); await p.waitForTimeout(80); };
   const btn = async (text, scope) => { await p.locator((scope || '#ed-root') + ' button', { hasText: text }).first().click(); await p.waitForTimeout(60); };
   const ok = async () => { await p.click('.ed-modal .ed-ok'); await p.waitForTimeout(80); };
@@ -140,7 +140,7 @@ function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name)
   console.log('5) Touch-Bedienung (Tablet 1024x768)');
   const tctx = await b.newContext({ viewport: { width: 1024, height: 768 }, deviceScaleFactor: 1, hasTouch: true, isMobile: true });
   const t = await tctx.newPage(); const terrs = []; t.on('pageerror', e => terrs.push('PAGEERROR ' + e.message));
-  await t.goto('file://' + FILE); await t.waitForTimeout(400);
+  await t.goto(URL0); await t.waitForTimeout(400);
   await t.tap('#lm-btn-editor'); await t.waitForTimeout(250);
   check('Editor per Touch-Button geöffnet', await t.evaluate(() => Engine.editorOpen && Editor.root.classList.contains('open')));
   const tileId = await t.evaluate(() => DB.tiles.find(x => x.sprite === 't_flower_a').id);

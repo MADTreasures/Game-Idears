@@ -28,7 +28,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
     for (const [map, id] of [['tupperwil', 'veloteil1'], ['route2', 'veloteil2'], ['route3', 'veloteil3'], ['route3', 'veloteil4'], ['route3', 'veloteil5']]) {
       const d = Data.map(map).events.find(e => e.id === id); let done = false;
       for (const [dx, dy, dir] of [[0, 1, 'up'], [0, -1, 'down'], [1, 0, 'left'], [-1, 0, 'right']]) {
-        if (Editor.cellSolid(Data.map(map), d.x + dx, d.y + dy)) continue;
+        if (Data.solidAt(Data.map(map), d.x + dx, d.y + dy)) continue;
         World.enter(map, d.x + dx, d.y + dy, dir); await LMDebug.ff(3); if (Bot.ent(id).hidden) break; await Bot.talk(dir); await Bot.free(); done = true; break;
       }
       res.push(id + ':' + done + ':' + Bag.count('veloteil'));
