@@ -1,6 +1,6 @@
 // Echtzeit-Test: echte Tastatur-Events, echte requestAnimationFrame-Schleife (kein Vorspulen).
 const { chromium } = require('playwright'); require('fs').mkdirSync(require('path').join(__dirname, 'out'), { recursive: true }); const path = require('path');
-const FILE = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html');
+const FILE = process.env.LM_FILE || path.join(__dirname, '..', 'Animora-Morgenrot.html');
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) process.exitCode = 1; };
 (async () => {
   const browser = await chromium.launch(); const page = await browser.newPage({ viewport: { width: 900, height: 700 } });

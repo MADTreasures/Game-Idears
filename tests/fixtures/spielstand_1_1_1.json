@@ -1,0 +1,475 @@
+{
+ "hinweis": "Spielstand, erzeugt mit Leinenmeister 1.1.1 (Schlüssel im localStorage: leinenmeister.save.leinenmeister11). Dient als Prüfvorlage: neuere Versionen müssen ihn unverändert laden können.",
+ "key": "leinenmeister.save.leinenmeister11",
+ "save": {
+  "format": "leinenmeister-save",
+  "version": 1,
+  "projectId": "leinenmeister11",
+  "name": "GLEN",
+  "rival": "RICO",
+  "map": "kaesingen",
+  "x": 13,
+  "y": 9,
+  "dir": "left",
+  "money": 12345,
+  "time": 7200,
+  "steps": 4321,
+  "party": [
+   {
+    "uid": 1,
+    "species": "lohwolf",
+    "nick": "FLAMMI",
+    "level": 29,
+    "exp": 24389,
+    "hp": 76,
+    "status": "",
+    "sleep": 0,
+    "iv": {
+     "hp": 8,
+     "atk": 9,
+     "def": 1,
+     "spc": 15,
+     "spd": 2
+    },
+    "moves": [
+     {
+      "id": "blitzstart",
+      "pp": 30
+     },
+     {
+      "id": "zubeisser",
+      "pp": 25
+     },
+     {
+      "id": "flammenbiss",
+      "pp": 15
+     },
+     {
+      "id": "kampfschrei",
+      "pp": 20
+     }
+    ],
+    "ot": "GLEN"
+   },
+   {
+    "uid": 2,
+    "species": "flaschi",
+    "nick": "",
+    "level": 24,
+    "exp": 13824,
+    "hp": 20,
+    "status": "",
+    "sleep": 0,
+    "iv": {
+     "hp": 13,
+     "atk": 14,
+     "def": 8,
+     "spc": 8,
+     "spd": 7
+    },
+    "moves": [
+     {
+      "id": "knisterhieb",
+      "pp": 30
+     },
+     {
+      "id": "panzern",
+      "pp": 30
+     },
+     {
+      "id": "wasserschwall",
+      "pp": 20
+     },
+     {
+      "id": "mikroplastik",
+      "pp": 15
+     }
+    ],
+    "ot": "GLEN"
+   },
+   {
+    "uid": 3,
+    "species": "spukel",
+    "nick": "",
+    "level": 26,
+    "exp": 17576,
+    "hp": 62,
+    "status": "poison",
+    "sleep": 0,
+    "iv": {
+     "hp": 11,
+     "atk": 1,
+     "def": 7,
+     "spc": 9,
+     "spd": 14
+    },
+    "moves": [
+     {
+      "id": "schattenstoss",
+      "pp": 30
+     },
+     {
+      "id": "wirrblick",
+      "pp": 15
+     },
+     {
+      "id": "spukball",
+      "pp": 15
+     },
+     {
+      "id": "verschlinger",
+      "pp": 15
+     }
+    ],
+    "ot": "GLEN"
+   },
+   {
+    "uid": 4,
+    "species": "zwickel",
+    "nick": "",
+    "level": 25,
+    "exp": 15625,
+    "hp": 66,
+    "status": "",
+    "sleep": 0,
+    "iv": {
+     "hp": 14,
+     "atk": 6,
+     "def": 10,
+     "spc": 13,
+     "spd": 15
+    },
+    "moves": [
+     {
+      "id": "panzern",
+      "pp": 30
+     },
+     {
+      "id": "spritzer",
+      "pp": 25
+     },
+     {
+      "id": "scherenhieb",
+      "pp": 20
+     },
+     {
+      "id": "wasserschwall",
+      "pp": 20
+     }
+    ],
+    "ot": "GLEN"
+   },
+   {
+    "uid": 5,
+    "species": "frostel",
+    "nick": "",
+    "level": 24,
+    "exp": 13824,
+    "hp": 61,
+    "status": "",
+    "sleep": 0,
+    "iv": {
+     "hp": 14,
+     "atk": 12,
+     "def": 0,
+     "spc": 12,
+     "spd": 6
+    },
+    "moves": [
+     {
+      "id": "wedler",
+      "pp": 30
+     },
+     {
+      "id": "eiszapfen",
+      "pp": 25
+     },
+     {
+      "id": "blitzstart",
+      "pp": 30
+     },
+     {
+      "id": "eishauch",
+      "pp": 15
+     }
+    ],
+    "ot": "GLEN"
+   },
+   {
+    "uid": 6,
+    "species": "drakling",
+    "nick": "",
+    "level": 22,
+    "exp": 13310,
+    "hp": 59,
+    "status": "",
+    "sleep": 0,
+    "iv": {
+     "hp": 7,
+     "atk": 7,
+     "def": 13,
+     "spc": 4,
+     "spd": 9
+    },
+    "moves": [
+     {
+      "id": "krallenhieb",
+      "pp": 35
+     },
+     {
+      "id": "knurrer",
+      "pp": 40
+     },
+     {
+      "id": "drachenodem",
+      "pp": 20
+     },
+     {
+      "id": "zubeisser",
+      "pp": 25
+     }
+    ],
+    "ot": "GLEN"
+   }
+  ],
+  "storage": [
+   {
+    "uid": 7,
+    "species": "hirnix",
+    "nick": "",
+    "level": 23,
+    "exp": 12167,
+    "hp": 56,
+    "status": "",
+    "sleep": 0,
+    "iv": {
+     "hp": 1,
+     "atk": 10,
+     "def": 13,
+     "spc": 3,
+     "spd": 10
+    },
+    "moves": [
+     {
+      "id": "wirrblick",
+      "pp": 15
+     },
+     {
+      "id": "gedankenstoss",
+      "pp": 25
+     },
+     {
+      "id": "panzern",
+      "pp": 30
+     },
+     {
+      "id": "hirnwelle",
+      "pp": 10
+     }
+    ],
+    "ot": "GLEN"
+   },
+   {
+    "uid": 8,
+    "species": "schlinger",
+    "nick": "",
+    "level": 20,
+    "exp": 8000,
+    "hp": 54,
+    "status": "",
+    "sleep": 0,
+    "iv": {
+     "hp": 14,
+     "atk": 0,
+     "def": 14,
+     "spc": 13,
+     "spd": 9
+    },
+    "moves": [
+     {
+      "id": "giftdorn",
+      "pp": 35
+     },
+     {
+      "id": "wedler",
+      "pp": 30
+     },
+     {
+      "id": "zubeisser",
+      "pp": 25
+     },
+     {
+      "id": "schlammwurf",
+      "pp": 20
+     }
+    ],
+    "ot": "GLEN"
+   },
+   {
+    "uid": 9,
+    "species": "rankhorn",
+    "nick": "",
+    "level": 20,
+    "exp": 8000,
+    "hp": 56,
+    "status": "",
+    "sleep": 0,
+    "iv": {
+     "hp": 3,
+     "atk": 1,
+     "def": 1,
+     "spc": 9,
+     "spd": 5
+    },
+    "moves": [
+     {
+      "id": "blatthieb",
+      "pp": 25
+     },
+     {
+      "id": "saugranke",
+      "pp": 20
+     },
+     {
+      "id": "schlummerstaub",
+      "pp": 15
+     },
+     {
+      "id": "dornensalve",
+      "pp": 15
+     }
+    ],
+    "ot": "GLEN"
+   },
+   {
+    "uid": 10,
+    "species": "lurchon",
+    "nick": "",
+    "level": 21,
+    "exp": 9261,
+    "hp": 60,
+    "status": "",
+    "sleep": 0,
+    "iv": {
+     "hp": 9,
+     "atk": 3,
+     "def": 5,
+     "spc": 2,
+     "spd": 6
+    },
+    "moves": [
+     {
+      "id": "spritzer",
+      "pp": 25
+     },
+     {
+      "id": "panzern",
+      "pp": 30
+     },
+     {
+      "id": "zubeisser",
+      "pp": 25
+     },
+     {
+      "id": "wasserschwall",
+      "pp": 20
+     }
+    ],
+    "ot": "GLEN"
+   }
+  ],
+  "bag": {
+   "leine": 4,
+   "starkleine": 6,
+   "profileine": 2,
+   "supertrank": 5,
+   "kaeseschnitte": 3,
+   "allheiler": 1,
+   "angel": 1,
+   "velo": 1,
+   "stadtplan": 1
+  },
+  "seen": {
+   "lohwolf": true,
+   "flaschi": true,
+   "spukel": true,
+   "zwickel": true,
+   "frostel": true,
+   "drakling": true,
+   "nagri": true,
+   "piepsel": true,
+   "tuetli": true,
+   "gueselmob": true,
+   "kaesli": true
+  },
+  "caught": {
+   "lohwolf": true,
+   "flaschi": true,
+   "spukel": true,
+   "zwickel": true,
+   "frostel": true,
+   "drakling": true
+  },
+  "flags": {
+   "has_starter": true,
+   "has_dex": true,
+   "rival_left": true,
+   "got_rod": true,
+   "kiesling_geschenk": true,
+   "pfand_geschenk": true,
+   "velo_gefunden": true,
+   "hoehle_tor1": true,
+   "loch_weg": true
+  },
+  "vars": {
+   "starter": 1,
+   "hebel": 1
+  },
+  "defeated": {
+   "rival_a": true,
+   "timo": true,
+   "lena": true,
+   "vroni": true,
+   "till": true,
+   "falk": true,
+   "rival2_a": true,
+   "otto": true,
+   "rolf": true,
+   "tara": true,
+   "polly": true,
+   "zoe": true,
+   "karl": true,
+   "mona": true,
+   "wanda": true,
+   "rival3_a": true,
+   "reto": true,
+   "vreni": true,
+   "urs": true
+  },
+  "badges": [
+   "gym1",
+   "gym2",
+   "gym3",
+   "gym4"
+  ],
+  "quests": {
+   "glocke": "done",
+   "muell": "done",
+   "velo": "done",
+   "loch": "active"
+  },
+  "respawn": {
+   "map": "heil4",
+   "x": 3,
+   "y": 3,
+   "dir": "up"
+  },
+  "npcState": {},
+  "tiles": {
+   "welpenhain|objects|13|13": 7
+  },
+  "uid": 11,
+  "diff": 2,
+  "bike": true
+ }
+}

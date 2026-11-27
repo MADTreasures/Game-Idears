@@ -2,7 +2,7 @@
 // Sperre bleibt nach Neuladen, spätestes Verfallsdatum, zurückgestellte Uhr, normale Datei unverändert.
 const { chromium } = require('playwright'); const path = require('path'), fs = require('fs');
 const OUT = path.join(__dirname, 'out'); fs.mkdirSync(OUT, { recursive: true });
-const GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html'), FILE = GAME.replace(/\.html$/, '-Editor.html');   // GAME = reines Spiel, FILE = Editor-Datei
+const GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Animora-Morgenrot.html'), FILE = GAME.replace(/\.html$/, '-Editor.html');   // GAME = reines Spiel, FILE = Editor-Datei
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) process.exitCode = 1; };
 const codeOf = html => { const a = html.indexOf('id="lm-engine">') + 15, b = html.indexOf('</' + 'script>', a); return html.slice(a, b); };
 const H = 3600000;

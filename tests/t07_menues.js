@@ -27,7 +27,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   ok(acts === 'BENUTZEN/ZURÜCK', 'Schlüsselitem kann nicht weggeworfen werden: ' + acts);
   await press(page, 'b', 6); await press(page, 'b', 6);
   // Team: umsortieren
-  await menuTo('MONSTER'); await press(page, 'a', 6); await menuTo('TAUSCH'); await snap(page, 'tausch'); await press(page, 'down', 3); await press(page, 'a', 6);
+  await menuTo('ANIMORA'); await press(page, 'a', 6); await menuTo('TAUSCH'); await snap(page, 'tausch'); await press(page, 'down', 3); await press(page, 'a', 6);
   ok(await ev(() => G.party[0].species === 'nagri' && G.party[1].species === 'glutwelp'), 'Team umsortiert: ' + await ev(() => G.party.map(m => m.species).join(',')));
   await press(page, 'b', 6);
   // Optionen

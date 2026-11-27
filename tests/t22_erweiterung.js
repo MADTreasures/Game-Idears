@@ -110,8 +110,8 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   ok(await ev(() => { const s = Mon.sp(Battle.E()).sprites; return !!DB.sprites[s.frontAtk] && !!DB.sprites[s.backAtk] && !Battle.v.eAtk; }), 'BODENLOS hat eigene Angriffsbilder; im Leerlauf ist nur das Loch zu sehen');
   await ev(() => { const top = UI.layers[UI.layers.length - 1]; top.sel = 0; }); await press(page, 'a', 6);
   await ev(() => { const top = UI.layers[UI.layers.length - 1]; top.sel = Battle.P().moves.findIndex(m => Data.move(m.id).cat === 'status'); if (top.sel < 0) top.sel = 0; }); await press(page, 'a', 6);
-  await mash(page, 'Battle.v && Battle.v.eAtk', 3000); await ff(page, 8); await snap(page, 'Bodenlos greift an');
-  ok(await ev(() => Battle.v && Battle.v.eAtk === true), 'Beim Angriff kommt das Monster aus dem Loch (Angriffsbild aktiv)');
+  const atkSeen = await mash(page, 'Battle.v && Battle.v.eAtk', 3000); await ff(page, 3); await snap(page, 'Bodenlos greift an');       // sofort prüfen: kurze Attacken zeigen das Angriffsbild nur wenige Ticks
+  ok(atkSeen === true, 'Beim Angriff kommt das Monster aus dem Loch (Angriffsbild aktiv)');
   await mash(page, "Battle.active && !Battle.v.eAtk && UI.layers.some(l => l.o && l.o.cols === 2)", 3000);
   ok(await ev(() => Battle.v.eAtk === false), 'Danach verschwindet es wieder im Loch');
   await ev(() => { Battle.E().hp = 1; }); await ev(() => Bot.free(20000)); await fight;
@@ -125,9 +125,9 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   }));
   ok(data.types.length === 20 && ['Plastik', 'Käse', 'Büro', 'Glitzer', 'Stahl'].every(t => data.types.includes(t)), '20 Typen, darunter die neuen Plastik, Käse, Büro, Glitzer und Stahl');
   ok(data.f.join(',') === '2,0.5,0,2,2,2,2,2,4', 'Typentabelle der neuen Typen: ' + data.f.join(','));
-  ok(data.mons === 37 && data.spr && data.moves >= 75, '37 Monster mit vollständigen Grafiken, ' + data.moves + ' Attacken');
+  ok(data.mons === 56 && data.spr && data.moves >= 90, '56 Monster mit vollständigen Grafiken, ' + data.moves + ' Attacken');
   ok(data.evo.join(',') === 'federix,panzerit,voltigo,brockolit,folion,fonduro,paragraf,discora', 'Neue Entwicklungen: ' + data.evo.join(', '));
-  ok(data.gyms.length === 5 && /^Falk:normal/.test(data.gyms[0]) && !/boden|gestein/.test(data.gyms[0]), 'Fünf Arenen; die erste ist nicht mehr Gestein/Boden: ' + data.gyms.join(' | '));
+  ok(data.gyms.length === 6 && /^Falk:normal/.test(data.gyms[0]) && !/boden|gestein/.test(data.gyms[0]), 'Sechs Arenen; die erste ist nicht mehr Gestein/Boden: ' + data.gyms.join(' | '));
   ok(data.idle.join(',') === 'hover,none,breathe' && data.fx.join(',') === 'ember,smell,', 'Leerlauf-Bewegungen und Dauer-Effekte je Art/Typ: ' + data.idle.join(',') + ' / ' + data.fx.join(','));
   // ---------- Animierte Kacheln, Gras, Kartenteilchen ----------
   const anim = await ev(async () => {

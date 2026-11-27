@@ -41,7 +41,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   await snap(page, 'nach_kampf');
   // Menü: jetzt mit LEXIKON und MONSTER
   await press(page, 'start', 6); await snap(page, 'menue'); 
-  ok(await ev(() => /LEXIKON\/MONSTER/.test(Bot.text())), 'Hauptmenü zeigt LEXIKON und MONSTER');
+  ok(await ev(() => /LEXIKON\/ANIMORA/.test(Bot.text())), 'Hauptmenü zeigt LEXIKON und ANIMORA');
   await press(page, 'down', 3); await press(page, 'a', 8); await snap(page, 'team');
   await press(page, 'a', 6); await press(page, 'a', 8); await snap(page, 'werte1'); await press(page, 'a', 6); await snap(page, 'werte2');
   await press(page, 'b', 6); await press(page, 'b', 6); await press(page, 'b', 6); await press(page, 'b', 6); await ff(page, 5);

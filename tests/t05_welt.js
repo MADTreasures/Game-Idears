@@ -34,7 +34,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   ok(moved, 'NPC mit Bewegungsmuster "wander" bewegt sich');
   // Tür mit Bedingung (Arena ohne Monster)
   await ev(() => { G.party = []; World.enter('bellstadt', 4, 5, 'up'); }); await ev(() => LMDebug.walk('U')); await ff(page, 40);
-  ok(await ev(() => World.mapId === 'bellstadt' && /Monster/.test(UI.tb.lines.join(' '))), 'Arena-Zugangsbedingung verweigert Eintritt: ' + await ev(() => UI.tb.lines.join(' ')));
+  ok(await ev(() => World.mapId === 'bellstadt' && /Animora/.test(UI.tb.lines.join(' '))), 'Arena-Zugangsbedingung verweigert Eintritt: ' + await ev(() => UI.tb.lines.join(' ')));
   await ev(() => Bot.free()); await ev(() => { Mon.give(Mon.create('glutwelp', 50)); });
   // Hohes Gras: Bild + Begegnungsstatistik
   await ev(() => { World.enter('route1', 8, 2, 'down'); World.encCooldown = 0; }); await ff(page, 3); await snap(page, 'gras');

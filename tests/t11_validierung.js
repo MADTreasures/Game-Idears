@@ -1,6 +1,6 @@
 // Das ausgelieferte Grundspiel muss die Editor-Validierung ohne Fehler bestehen.
 const { chromium } = require('playwright'); const path = require('path');
-const FILE = (process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html')).replace(/\.html$/, '-Editor.html') + '#spiel';   // Editor-Datei; #spiel = im Spiel starten (der Test öffnet den Editor selbst)
+const FILE = (process.env.LM_FILE || path.join(__dirname, '..', 'Animora-Morgenrot.html')).replace(/\.html$/, '-Editor.html') + '#spiel';   // Editor-Datei; #spiel = im Spiel starten (der Test öffnet den Editor selbst)
 (async () => {
   const browser = await chromium.launch(); const page = await browser.newPage();
   const errors = []; page.on('pageerror', e => errors.push(e.message));

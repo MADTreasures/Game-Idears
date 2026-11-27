@@ -26,7 +26,7 @@ const T0 = Date.now(), ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + 
     return { bad, maps: DB.maps.length, npcs: DB.maps.reduce((s, m) => s + m.npcs.length, 0), towns: DB.maps.filter(m => m.kind === 'outdoor').map(m => m.name) };
   });
   ok(reach.bad.length === 0, 'Auf allen ' + reach.maps + ' Karten sind Übergänge, Personen und Ereignisse erreichbar' + (reach.bad.length ? ': ' + reach.bad.slice(0, 8).join(' | ') : ''));
-  ok(reach.towns.length === 11 && ['TUPPERWIL', 'GRUBENAU', 'KÄSINGEN', 'AMTSHAUSEN'].every(t => reach.towns.includes(t)), 'Welt: ' + reach.towns.join(', '));
+  ok(reach.towns.length === 13 && ['TUPPERWIL', 'GRUBENAU', 'KÄSINGEN', 'AMTSHAUSEN', 'NEBELMOOR'].every(t => reach.towns.includes(t)), 'Welt: ' + reach.towns.join(', '));
   ok(reach.npcs >= 110, 'Es gibt deutlich mehr Menschen: ' + reach.npcs + ' Personen (vorher 24)');
   lap('Erreichbarkeit');
   // ---------- Durchlauf ----------
@@ -52,7 +52,9 @@ const T0 = Date.now(), ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + 
     ['edge', 'north', 'route4', 'Grubenau -> Route 4'], ['edge', 'north', 'kaesingen', 'Route 4 -> Käsingen'], ['heal', 'heil4', null, 'Heilzentrum Käsingen'], ['shop', 'shop4', null, 'Käselädeli Käsingen'],
     ['blocked', 'west', null, 'Käsingen: Westtor ohne Löchermedaille gesperrt'], ['gym', 'arena4', 'gym4', 'Arena Käsingen (Käse): Leiter Urs, Löchermedaille'],
     ['edge', 'west', 'route5', 'Käsingen -> Route 5'], ['edge', 'west', 'amtshausen', 'Route 5 -> Amtshausen'], ['heal', 'heil5', null, 'Heilzentrum Amtshausen'], ['shop', 'shop5', null, 'Amtskiosk Amtshausen'],
-    ['gym', 'arena5', 'gym5', 'Arena Amtshausen (Büro/Glitzer): Dr. Stempel, Stempelmedaille']
+    ['blocked', 'south', null, 'Amtshausen: Südtor ohne Stempelmedaille gesperrt'], ['gym', 'arena5', 'gym5', 'Arena Amtshausen (Büro/Glitzer): Dr. Stempel, Stempelmedaille'],
+    ['edge', 'south', 'route6', 'Amtshausen -> Route 6 (Nebelpfad)'], ['edge', 'south', 'nebelmoor', 'Route 6 -> Nebelmoor'], ['heal', 'heil6', null, 'Heilzentrum Nebelmoor'], ['shop', 'shop6', null, 'Nebelkrämer Nebelmoor'],
+    ['gym', 'arena6', 'gym6', 'Arena Nebelmoor (Geist/Psycho): Leiterin Selma, Spukmedaille']
   ];
   let alive = true;
   for (const [f, a, b, label] of steps) {
@@ -64,7 +66,7 @@ const T0 = Date.now(), ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + 
     if (f === 'edge') { await ff(page, 40); await snap(page, a + ' ' + b); lap(label); }
   }
   const end = await ev(() => ({ badges: G.badges.length, champ: !!G.flags.champion, rivals: ['rival2_a', 'rival3_a', 'rival4_a'].filter(t => G.defeated[t]).length, def: Object.keys(G.defeated).length, ml: Bag.count('meisterleine'), stock: Data.shop('shop_amtshausen').stock.filter(s => Cond.all(s.cond)).some(s => s.item === 'meisterleine') }));
-  ok(end.badges === 5 && end.champ, 'Alle fünf Medaillen erhalten – der Spieler ist LEINENMEISTER');
+  ok(end.badges === 6 && end.champ, 'Alle sechs Medaillen erhalten – der Spieler ist LEINENMEISTER');
   ok(end.rivals === 3, 'Der Rivale hat unterwegs dreimal herausgefordert (Route 2, 4 und 5)');
   ok(end.ml === 1 && end.stock, 'Belohnung der letzten Arena: Meisterleine; der Kiosk verkauft sie jetzt');
   ok(end.def >= 25, 'Unterwegs ' + end.def + ' Trainer besiegt');

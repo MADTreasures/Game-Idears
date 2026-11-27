@@ -46,7 +46,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   const bl = await ev(() => UI.layers.filter(l => l.o && l.o.items).pop().o.items.map(i => i.label)); for (let i = 0; i < bl.indexOf('Meisterleine'); i++) await press(page, 'down', 3);
   await press(page, 'a', 8); await page.evaluate(() => LMDebug.until(() => !World.lock && !Battle.active && Gfx.fade === 0, 30000, 'a')); await f;
   ok(await ev(() => window.__res === 'caught' && G.party.length === 6 && G.storage.length === 1 && G.storage[0].species === 'blitzel' && Bag.count('meisterleine') === 0), 'Meisterleine fängt garantiert; bei vollem Team geht das Monster in den Speicher');
-  ok(await ev(() => window.__says.some(s => /Monsterspeicher gebracht/.test(s))), 'Meldung über Einlagerung erscheint');
+  ok(await ev(() => window.__says.some(s => /Animora-Speicher gebracht/.test(s))), 'Meldung über Einlagerung erscheint');
   console.log('errors:', errors.length ? errors.join('\n') : 'keine');
   await browser.close();
 })().catch(e => { console.error(e); process.exit(1); });

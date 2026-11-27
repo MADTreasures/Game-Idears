@@ -53,7 +53,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   await ev(() => Bot.out());
   ok(await ev(() => World.mapId === 'bellstadt' && Bot.ent('waechter').hidden && !Bot.ent('waechter_ok').hidden), 'Wächter hat den Weg freigegeben');
   // Shop-Sortiment mit Medaille
-  ok(await ev(() => Data.shop('shop_bellstadt').stock.filter(s => Cond.all(s.cond)).length === 7), 'Shop schaltet neue Ware frei');
+  ok(await ev(() => Data.shop('shop_bellstadt').stock.filter(s => Cond.all(s.cond)).length === 8), 'Shop schaltet neue Ware frei');
   // --- Route 2 ---
   await ev(() => Bot.edge('north', 'route2'));
   ok(await ev(() => World.mapId === 'route2'), 'Route 2 freigeschaltet und betreten: ' + await ev(() => Bot.st()));

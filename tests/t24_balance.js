@@ -15,7 +15,8 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
       { pre: ['rival2_X'], route: 'route2', tr: ['otto', 'mia', 'jonas', 'kim'], gymTr: ['rolf', 'tara'], leader: 'polly' },
       { pre: [], route: 'route3', tr: ['zoe', 'hans', 'luca', 'kurt', 'maxx'], gymTr: ['karl', 'mona'], leader: 'wanda' },
       { pre: ['rival3_X'], route: 'route4', tr: ['alois', 'heidi', 'beat', 'nora', 'lars'], gymTr: ['reto', 'vreni'], leader: 'urs' },
-      { pre: [], route: 'route5', tr: ['kunz', 'jo', 'ole', 'finn', 'gerda', 'rival4_X'], gymTr: ['egli', 'ida'], leader: 'stempel' }
+      { pre: [], route: 'route5', tr: ['kunz', 'jo', 'ole', 'finn', 'gerda', 'rival4_X'], gymTr: ['egli', 'ida'], leader: 'stempel' },
+      { pre: [], route: 'route6', tr: ['luna', 'nico', 'rob', 'cleo'], gymTr: ['vera', 'kaspar'], leader: 'selma' }
     ];
     let potions = 0;
     const grow = (m, exp) => { const ups = Mon.addExp(m, Math.floor(exp)); for (const up of ups) for (const mv of up.learn) { if (m.moves.some(x => x.id === mv)) continue; const d = Data.move(mv), o = { id: mv, pp: d.pp }; if (m.moves.length < 4) m.moves.push(o); else { let w = 0, wp = 1e9; m.moves.forEach((x, i) => { const p = Data.move(x.id).power || 0; if (p < wp) { wp = p; w = i; } }); if ((d.power || 0) >= wp) m.moves[w] = o; } } for (;;) { const e = Mon.evolution(m, { kind: 'level' }); if (!e) break; m.species = e.to; } m.hp = Mon.maxHp(m); };
@@ -27,7 +28,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
     Battle.chooseAction = async () => {
       const P = Battle.P(); let best = -1, bs = -1;
       if (potions > 0 && P.hp < Mon.maxHp(P) * 0.35) { potions--; const it = Data.item(P.level < 18 ? 'trank' : P.level < 30 ? 'supertrank' : 'hypertrank'); Bag.add(it.id, 1); return { type: 'item', item: it, target: Battle.pi }; }
-      P.moves.forEach((m, i) => { if (m.pp <= 0) return; const d = Data.move(m.id), s = d.cat === 'status' ? 0 : Battle.calcDamage('p', d, false, 0.92) * (d.acc ? d.acc / 100 : 1); if (s > bs) { bs = s; best = i; } });
+      P.moves.forEach((m, i) => { if (m.pp <= 0 || Mon.moveLocked(P, Data.move(m.id))) return; const d = Data.move(m.id), s = d.cat === 'status' ? 0 : Battle.calcDamage('p', d, false, 0.92) * (d.acc ? d.acc / 100 : 1); if (s > bs) { bs = s; best = i; } });
       return { type: 'move', idx: best };
     };
     Menus.party = async o => bestIdx(o.cur); Menus.learnMove = async () => {}; Menus.evolve = async () => {};
@@ -67,8 +68,8 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   ok(se < me && se < le, 'EHRENLOSER ZOCKER ist spürbar schwerer: ' + pct(se) + ' (MITTEL ' + pct(me) + ', leicht ' + pct(le) + ')');
   ok(res.mittelK.every(r => r.lv >= r.ace - 1) && res.mittelE.every(r => r.lv >= r.ace - 1), 'MITTEL: der Starter ist vor jeder Arena mindestens so stark wie das beste Monster des Leiters (höchstens 1 Level darunter)');
   const lv = res.mittelE.filter(r => r.st === 'glutwelp');
-  ok(lv.every((r, i) => i === 0 || r.ace > lv[i - 1].ace), 'Die Arenen werden der Reihe nach stärker: beste Monster Lv ' + lv.map(r => r.ace).join(' < '));
-  for (const s of ['glutwelp', 'quappel', 'sprossel']) { const w = res.mittelK.filter(r => r.st === s).reduce((a, r) => a + r.wins, 0); ok(w >= 5 * N * 0.6, 'MITTEL ist mit jedem Starter machbar: ' + s + ' gewinnt ' + w + ' von ' + 5 * N + ' Leiterkämpfen'); }
+  ok(lv.every((r, i) => i === 0 || r.ace > lv[i - 1].ace), 'Die sechs Arenen werden der Reihe nach stärker: beste Monster Lv ' + lv.map(r => r.ace).join(' < '));
+  for (const s of ['glutwelp', 'quappel', 'sprossel']) { const w = res.mittelK.filter(r => r.st === s).reduce((a, r) => a + r.wins, 0); ok(w >= 6 * N * 0.6, 'MITTEL ist mit jedem Starter machbar: ' + s + ' gewinnt ' + w + ' von ' + 6 * N + ' Leiterkämpfen'); }
   console.log('errors:', errors.length ? errors.slice(0, 5).join('\n') : 'keine');
   await browser.close();
 })().catch(e => { console.error(e); process.exit(1); });

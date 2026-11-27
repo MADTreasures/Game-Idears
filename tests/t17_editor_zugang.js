@@ -1,8 +1,8 @@
-// Trennung von Spiel und Editor (seit 1.1.1): Leinenmeister.html ist das reine Spiel OHNE Editor,
-// der Editor steckt nur in Leinenmeister-Editor.html (startet im Editor; mit #spiel am Titelbild).
+// Trennung von Spiel und Editor (seit 1.1.1): Animora-Morgenrot.html ist das reine Spiel OHNE Editor,
+// der Editor steckt nur in Animora-Morgenrot-Editor.html (startet im Editor; mit #spiel am Titelbild).
 const { chromium } = require('playwright'); const path = require('path'), fs = require('fs');
 const OUT = path.join(__dirname, 'out'); fs.mkdirSync(OUT, { recursive: true });
-const FILE = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html'), EDFILE = FILE.replace(/\.html$/, '-Editor.html');
+const FILE = process.env.LM_FILE || path.join(__dirname, '..', 'Animora-Morgenrot.html'), EDFILE = FILE.replace(/\.html$/, '-Editor.html');
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) process.exitCode = 1; };
 async function fresh(url, vp) {
   const browser = await chromium.launch(); const ctx = await browser.newContext({ viewport: vp || { width: 1360, height: 820 }, acceptDownloads: true });
@@ -14,8 +14,8 @@ const codeOf = html => { const a = html.indexOf('id="lm-engine">') + 15, b = htm
 (async () => {
   const game = fs.readFileSync(FILE, 'utf8'), ed = fs.readFileSync(EDFILE, 'utf8');
   // 1) Die Spieldatei enthält keinen Editor
-  ok(!/\nconst Editor\b/.test(game) && !/\nconst ED_CSS\b/.test(game) && game.split('id="lm-engine"')[0].indexOf('LM_START') < 0, 'Leinenmeister.html enthält keinen Editor-Code und keinen Start-Schalter');
-  ok(/\nconst Editor\b/.test(ed) && ed.length - game.length > 150000, 'Der Editor steckt nur in Leinenmeister-Editor.html (' + Math.round(game.length / 1024) + ' KB gegenüber ' + Math.round(ed.length / 1024) + ' KB)');
+  ok(!/\nconst Editor\b/.test(game) && !/\nconst ED_CSS\b/.test(game) && game.split('id="lm-engine"')[0].indexOf('LM_START') < 0, 'Animora-Morgenrot.html enthält keinen Editor-Code und keinen Start-Schalter');
+  ok(/\nconst Editor\b/.test(ed) && ed.length - game.length > 150000, 'Der Editor steckt nur in Animora-Morgenrot-Editor.html (' + Math.round(game.length / 1024) + ' KB gegenüber ' + Math.round(ed.length / 1024) + ' KB)');
   let s = await fresh('file://' + FILE, { width: 700, height: 660 });
   ok(await s.page.evaluate(() => !LM_hasEditor() && !Engine.editorOpen && !document.getElementById('lm-btn-editor') && !/Editor/.test(document.getElementById('lm-hint').textContent)), 'Spieldatei: kein Editor-Knopf und kein Hinweis auf F2 unter dem Spiel');
   await s.page.keyboard.press('F2'); await s.page.waitForTimeout(300);
@@ -32,12 +32,12 @@ const codeOf = html => { const a = html.indexOf('id="lm-engine">') + 15, b = htm
   s = await fresh('file://' + EDFILE + '#spiel');
   await s.page.evaluate(() => { DB.meta.title = 'Arbeitskopie-Titel'; Project.saveWorking(); });
   await s.page.goto('file://' + FILE); await s.page.waitForFunction(() => typeof Engine !== 'undefined' && typeof DB === 'object' && DB !== null);
-  ok(await s.page.evaluate(() => Project.source === 'embedded' && DB.meta.title === 'Leinenmeister'), 'Spieldatei benutzt immer ihre eigenen Daten, nie die Arbeitskopie des Editors');
+  ok(await s.page.evaluate(() => Project.source === 'embedded' && DB.meta.title === 'Animora – Morgenrot'), 'Spieldatei benutzt immer ihre eigenen Daten, nie die Arbeitskopie des Editors');
   await s.page.goto('file://' + EDFILE + '#spiel'); await s.page.waitForFunction(() => typeof Engine !== 'undefined' && typeof DB === 'object' && DB !== null);
   ok(await s.page.evaluate(() => { const r = Project.source === 'working' && DB.meta.title === 'Arbeitskopie-Titel'; Project.discardWorking(); return r; }), 'Editor-Datei lädt weiterhin ihre Arbeitskopie'); await s.browser.close();
   // 2) Editor-Datei
   s = await fresh('file://' + EDFILE);
-  ok(await s.page.evaluate(() => Engine.editorOpen && document.getElementById('ed-root').classList.contains('open')), 'Leinenmeister-Editor.html startet direkt im Editor');
+  ok(await s.page.evaluate(() => Engine.editorOpen && document.getElementById('ed-root').classList.contains('open')), 'Animora-Morgenrot-Editor.html startet direkt im Editor');
   await s.page.screenshot({ path: path.join(OUT, 'edstart.png') });
   ok(await s.page.evaluate(g => LM_stripEditor(document.getElementById('lm-engine').textContent) === g, codeOf(game)), 'Spieldatei = Editor-Datei ohne den Editor-Teil (Programmcode sonst identisch)');
   const html = await s.page.evaluate(() => Project.buildHTML()), htmlEd = await s.page.evaluate(() => Project.buildHTML({ editor: true }));

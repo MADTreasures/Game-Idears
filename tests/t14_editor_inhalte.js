@@ -1,6 +1,6 @@
 // Zweiter Funktionstest: weitere Editorfunktionen, Touch-Bedienung und "neue Inhalte direkt im Spiel testen".
 const { chromium } = require('playwright'); const path = require('path');
-const OUT = path.join(__dirname, 'out'), GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html'), FILE = process.argv[2] || GAME.replace(/\.html$/, '-Editor.html'), URL0 = 'file://' + FILE + '#spiel';   // FILE = Editor-Datei; #spiel = im Spiel starten (der Test öffnet den Editor selbst)
+const OUT = path.join(__dirname, 'out'), GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Animora-Morgenrot.html'), FILE = process.argv[2] || GAME.replace(/\.html$/, '-Editor.html'), URL0 = 'file://' + FILE + '#spiel';   // FILE = Editor-Datei; #spiel = im Spiel starten (der Test öffnet den Editor selbst)
 require('fs').mkdirSync(OUT, { recursive: true });
 let pass = 0, fail = 0; const fails = [];
 function check(name, ok, info) { if (ok) { pass++; console.log('  ok   ' + name); } else { fail++; fails.push(name); console.log('  FAIL ' + name + (info !== undefined ? '  -> ' + JSON.stringify(info) : '')); } }

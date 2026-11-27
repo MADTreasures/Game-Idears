@@ -3,7 +3,7 @@
 //   "Editor-Datei exportieren" -> Spiel + Editor, startet im Editor, wieder bearbeit- und exportierbar
 // Geprüft wird: Programmcode byte-identisch zu den ausgelieferten Dateien, Spielen der exportierten Datei, Weiterbearbeiten und erneuter Export.
 const { chromium } = require('playwright'); require('fs').mkdirSync(require('path').join(__dirname, 'out'), { recursive: true }); const path = require('path'), fs = require('fs');
-const OUT = path.join(__dirname, 'out'), GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html'), FILE = GAME.replace(/\.html$/, '-Editor.html');   // GAME = reines Spiel, FILE = Editor-Datei
+const OUT = path.join(__dirname, 'out'), GAME = process.env.LM_FILE || path.join(__dirname, '..', 'Animora-Morgenrot.html'), FILE = GAME.replace(/\.html$/, '-Editor.html');   // GAME = reines Spiel, FILE = Editor-Datei
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) process.exitCode = 1; };
 const codeOf = html => { const a = html.indexOf('id="lm-engine">') + 15, b = html.indexOf('</' + 'script>', a); return html.slice(a, b); };
 const dataOf = html => { const mark = 'id="lm-data" type="application/json">', a = html.lastIndexOf(mark) + mark.length, b = html.indexOf('</' + 'script>', a); return JSON.parse(html.slice(a, b)); };
@@ -38,7 +38,7 @@ async function exportViaButton(page, target, withEditor) {
     DB.maps.push(m);
     Data.map('route2').warps.push({ id: 'nach_neustadt', x: 18, y: 2, kind: 'step', toMap: 'neustadt', toX: 2, toY: 5, toDir: 'right', cond: [] });
     // fünf neue Monster (Kopien mit eigenen Namen/Sprites)
-    for (let i = 1; i <= 5; i++) { const c = JSON.parse(JSON.stringify(DB.monsters[i])); c.id = 'neumon_' + i; c.no = 37 + i; c.name = 'Neumon' + i; c.evolutions = []; DB.sprites['neu_front_' + i] = JSON.parse(JSON.stringify(DB.sprites[c.sprites.front])); c.sprites = Object.assign({}, c.sprites, { front: 'neu_front_' + i }); DB.monsters.push(c); }
+    for (let i = 1; i <= 5; i++) { const c = JSON.parse(JSON.stringify(DB.monsters[i])); c.id = 'neumon_' + i; c.no = 56 + i; c.name = 'Neumon' + i; c.evolutions = []; DB.sprites['neu_front_' + i] = JSON.parse(JSON.stringify(DB.sprites[c.sprites.front])); c.sprites = Object.assign({}, c.sprites, { front: 'neu_front_' + i }); DB.monsters.push(c); }
     // neue Arena mit Leiter
     DB.trainers.push({ id: 'leiter2', cls: 'Leiter', name: 'Nero', charset: 'man', sprite: 'tr_boy', team: [{ species: 'neumon_1', level: 20 }, { species: 'neumon_5', level: 22 }], reward: 2000, intro: 'Ich bin Nero!', defeat: 'Unglaublich!', after: 'Gut gekämpft.', sight: 0, cond: [], ai: 'smart' });
     DB.sprites.badge_neu = JSON.parse(JSON.stringify(DB.sprites.badge_buddel));
@@ -62,11 +62,11 @@ async function exportViaButton(page, target, withEditor) {
   ok(!hasEd(g1) && !/LM_START/.test(g1.split('id="lm-engine"')[0]) && g1.length < g1ed.length - 150000, 'Spiel-Export enthält KEINEN Editor (' + Math.round(g1.length / 1024) + ' KB statt ' + Math.round(g1ed.length / 1024) + ' KB)');
   ok(codeOf(g1ed) === codeOf(orig) && hasEd(g1ed) && /window\.LM_START = "editor"/.test(g1ed), 'Editor-Export: Programmcode byte-identisch zur Editor-Datei, startet im Editor');
   const d1 = dataOf(g1);
-  ok(d1.maps.some(m => m.id === 'neustadt') && d1.monsters.length === 42 && d1.gyms.length === 6 && d1.sprites.neu_front_3 && d1.meta.title === 'Leinenmeister Test', 'Exportierte Daten enthalten neue Stadt, 5 Monster, Arena, Sprites, Titel');
+  ok(d1.maps.some(m => m.id === 'neustadt') && d1.monsters.length === 61 && d1.gyms.length === 7 && d1.sprites.neu_front_3 && d1.meta.title === 'Leinenmeister Test', 'Exportierte Daten enthalten neue Stadt, 5 Monster, Arena, Sprites, Titel');
   ok(/<title>Leinenmeister Test<\/title>/.test(g1), 'Titel der exportierten Datei gesetzt');
   // --- Exportierte Datei in frischem Profil öffnen und SPIELEN ---
   s = await fresh(e1);
-  ok(await s.page.evaluate(() => Project.source === 'embedded' && !!Data.map('neustadt') && DB.monsters.length === 42), 'Exportierte Datei lädt eigenständig (keine Browserdaten nötig), Änderungen vorhanden');
+  ok(await s.page.evaluate(() => Project.source === 'embedded' && !!Data.map('neustadt') && DB.monsters.length === 61), 'Exportierte Datei lädt eigenständig (keine Browserdaten nötig), Änderungen vorhanden');
   const play = await s.page.evaluate(async () => {
     Engine.manual = true; Opt.text = 2; Engine.reset(); G = Game.fresh(); G.name = 'TEST'; Mon.give(Mon.create('quappel', 60)); G.badges.push('gym1'); G.flags.has_dex = true; G.flags.rival2_done = true; Engine.startGame(G); World.enter('route2', 17, 3, 'right'); World.encCooldown = 999;
     await LMDebug.ff(5); await LMDebug.walk('U'); await LMDebug.walk('R');                       // auf den neuen Übergang (18,2)
@@ -90,7 +90,7 @@ async function exportViaButton(page, target, withEditor) {
   await s.browser.close();
   // --- Generation 2: die exportierte Editor-Datei öffnen, weiterbearbeiten und erneut exportieren ---
   s = await fresh(e1ed); await s.page.waitForTimeout(300);
-  ok(await s.page.evaluate(() => Engine.editorOpen && !!document.getElementById('ed-root') && !!Data.map('neustadt') && DB.monsters.length === 42), 'Exportierte Editor-Datei startet im Editor und enthält alle Änderungen');
+  ok(await s.page.evaluate(() => Engine.editorOpen && !!document.getElementById('ed-root') && !!Data.map('neustadt') && DB.monsters.length === 61), 'Exportierte Editor-Datei startet im Editor und enthält alle Änderungen');
   await s.page.evaluate(() => { Data.map('neustadt').name = 'NEUSTADT II'; DB.items.push({ id: 'neuitem', name: 'Neuitem', cat: 'misc', price: 5, desc: 'Test.' }); Data.reindex(); });
   const e2g = path.join(OUT, 'export_gen2_spiel.html'); await exportViaButton(s.page, e2g);
   const e2 = path.join(OUT, 'export_gen2.html'); await exportViaButton(s.page, e2, true);
@@ -98,7 +98,7 @@ async function exportViaButton(page, target, withEditor) {
   await s.browser.close();
   const g2 = fs.readFileSync(e2, 'utf8'), d2 = dataOf(g2), g2g = fs.readFileSync(e2g, 'utf8');
   ok(codeOf(g2) === codeOf(orig) && codeOf(g2g) === codeOf(game), 'Erneuter Export: Programmcode beider Dateien weiterhin identisch');
-  ok(d2.maps.find(m => m.id === 'neustadt').name === 'NEUSTADT II' && d2.items.some(i => i.id === 'neuitem') && d2.monsters.length === 42 && dataOf(g2g).items.some(i => i.id === 'neuitem'), 'Erneuter Export enthält alte und neue Änderungen (Spiel- und Editor-Datei)');
+  ok(d2.maps.find(m => m.id === 'neustadt').name === 'NEUSTADT II' && d2.items.some(i => i.id === 'neuitem') && d2.monsters.length === 61 && dataOf(g2g).items.some(i => i.id === 'neuitem'), 'Erneuter Export enthält alte und neue Änderungen (Spiel- und Editor-Datei)');
   ok(d2.meta.revision > d1.meta.revision && d2.meta.savedAt >= d1.meta.savedAt, 'Revisionszähler steigt (' + d1.meta.revision + ' -> ' + d2.meta.revision + ')');
   s = await fresh(e2); await s.page.waitForTimeout(300);
   ok(await s.page.evaluate(() => Data.map('neustadt').name === 'NEUSTADT II' && !!Data.idx.items.neuitem && Engine.editorOpen), 'Zweite Generation lädt eigenständig und ist wieder im Editor bearbeitbar');

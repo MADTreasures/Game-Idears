@@ -1,12 +1,12 @@
-// Gemeinsame Testhelfer (Playwright). Spieltests laufen gegen Leinenmeister.html (reines Spiel ohne Editor),
-// Editor-Tests gegen Leinenmeister-Editor.html (mit #spiel in der Adresse startet sie am Titelbild).
+// Gemeinsame Testhelfer (Playwright). Spieltests laufen gegen Animora-Morgenrot.html (reines Spiel ohne Editor),
+// Editor-Tests gegen Animora-Morgenrot-Editor.html (mit #spiel in der Adresse startet sie am Titelbild).
 // Aufruf aller Tests:  node tests/run_all.js   (einzeln: node tests/t02_spielbeginn.js)
 // Andere Datei testen: LM_FILE=/pfad/zur/Datei.html node tests/run_all.js
 // Bildschirmfotos landen in tests/out/.
 const { chromium } = require('playwright');
 const path = require('path');
 require('fs').mkdirSync(path.join(__dirname, 'out'), { recursive: true });
-const FILE = process.env.LM_FILE || path.join(__dirname, '..', 'Leinenmeister.html');
+const FILE = process.env.LM_FILE || path.join(__dirname, '..', 'Animora-Morgenrot.html');
 async function open(file, opts) {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 700, height: 660 }, deviceScaleFactor: 1, acceptDownloads: true });

@@ -92,7 +92,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   // ---------- RAMBOSS ----------
   await ev(async () => { await Bot.goto(7, 3); World.p.dir = 'up'; }); await ff(page, 20); await snap(page, 'Kammer des Kriegers');
   const info = await ev(() => { const m = Data.mon('ramboss'); return { types: m.types.join('/'), need: m.needLeash, no: m.no, spr: ['front', 'back', 'icon'].every(k => DB.sprites[m.sprites[k]]), f: [Data.typeFactor('feuer', m.types), Data.typeFactor('gift', m.types), Data.typeFactor('normal', m.types), Data.typeFactor('boden', m.types)], total: DB.monsters.length, types20: DB.types.length }; });
-  ok(info.types === 'stahl/kampf' && info.need === 'meisterleine' && info.no === 37 && info.spr && info.total === 37 && info.types20 === 20, 'RAMBOSS ist Monster Nr. 37, Typ Stahl/Kampf (neuer Typ Stahl), mit eigenen Grafiken');
+  ok(info.types === 'stahl/kampf' && info.need === 'meisterleine' && info.no === 37 && info.spr && info.total === 56 && info.types20 === 20, 'RAMBOSS ist Monster Nr. 37, Typ Stahl/Kampf (neuer Typ Stahl), mit eigenen Grafiken');
   ok(info.f.join() === '2,0,0.5,2', 'Stahl: schwach gegen Feuer und Boden, immun gegen Gift, robust gegen Normal (' + info.f.join(', ') + ')');
   await ev(() => { Bag.add('profileine', 2); Bag.add('leine', 2); });
   await ev(() => Bot.talk('up')); await mash(page, "Battle.active && UI.layers.some(l => l.o && l.o.cols === 2)", 5000); await snap(page, 'RAMBOSS');

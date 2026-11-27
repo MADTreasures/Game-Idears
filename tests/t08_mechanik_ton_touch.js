@@ -58,7 +58,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) pro
   await ev(() => { G.money = 4242; Save.write(); });
   const exported = await ev(() => JSON.stringify(G));
   ok(await ev(t => { Save.del(); const s = Save.importText(t); return s.money === 4242 && Save.exists(); }, exported), 'Spielstand-Export/-Import (Datenebene) funktioniert');
-  ok(await ev(() => { try { Save.importText('{"format":"x"}'); return false; } catch (e) { return /Kein Leinenmeister/.test(e.message); } }), 'Ungültige Spielstand-Datei wird abgelehnt');
+  ok(await ev(() => { try { Save.importText('{"format":"x"}'); return false; } catch (e) { return /Kein Animora/.test(e.message); } }), 'Ungültige Spielstand-Datei wird abgelehnt');
   ok(await ev(() => { const s = JSON.parse(JSON.stringify(G)); s.party.push({ species: 'gibtsnicht', moves: [] }); s.map = 'weg'; s.bag.unsinn = 3; const c = Save.sanitize(s); return c.party.every(m => Data.hasMon(m.species)) && c.map === DB.meta.startMap && !c.bag.unsinn; }), 'Spielstand wird gegen geänderte Projektdaten abgesichert');
   await montage(page, 'misc.png', 4);
   // --- Touch-Layout (Hochformat-Handy) ---
